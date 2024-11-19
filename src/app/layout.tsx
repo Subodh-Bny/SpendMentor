@@ -3,6 +3,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import AllContextProvider from "@/context/AllContextProvider";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,42 +21,44 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <AllContextProvider>
         <body className={`${inter.className} antialiased`}>
-          {children}
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              success: {
-                style: {
-                  background: "#1d4ed8",
-                  color: "white",
-                  padding: "12px 24px",
-                  borderRadius: "8px",
+          <ThemeProvider attribute="class" disableTransitionOnChange>
+            {children}
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                success: {
+                  style: {
+                    background: "#1d4ed8",
+                    color: "white",
+                    padding: "12px 24px",
+                    borderRadius: "8px",
+                  },
+                  duration: 4000,
                 },
-                duration: 4000,
-              },
-              error: {
-                style: {
-                  background: "#dc2626",
-                  color: "white",
-                  padding: "12px 24px",
-                  borderRadius: "8px",
+                error: {
+                  style: {
+                    background: "#dc2626",
+                    color: "white",
+                    padding: "12px 24px",
+                    borderRadius: "8px",
+                  },
+                  duration: 4000,
                 },
-                duration: 4000,
-              },
-              loading: {
-                style: {
-                  background: "var(--muted)",
-                  color: "var(--muted-foreground)",
-                  padding: "12px 24px",
-                  borderRadius: "8px",
+                loading: {
+                  style: {
+                    background: "var(--muted)",
+                    color: "var(--muted-foreground)",
+                    padding: "12px 24px",
+                    borderRadius: "8px",
+                  },
+                  duration: 3000,
                 },
-                duration: 3000,
-              },
-            }}
-          />
+              }}
+            />
+          </ThemeProvider>
         </body>
       </AllContextProvider>
     </html>

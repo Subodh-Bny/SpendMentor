@@ -23,38 +23,28 @@ export const authOptions: NextAuthOptions = {
         if (!credentials) {
           throw new Error("Credentials are required");
         }
-        console.log("cred");
         try {
-          console.log("bef user");
           const user = await User.findOne({
             email: credentials.email,
           });
 
           if (!user) {
-            console.log("user err");
             throw new Error("Invalid email or password.");
           }
-
-          console.log("user");
 
           const isPasswordCorrect = await bcryptjs.compare(
             credentials.password,
             user.password
           );
 
-          console.log("passcorrect ");
           if (isPasswordCorrect) {
-            console.log("pass");
-
             return user;
           } else {
-            console.log("pass err");
             throw new Error("Incorrect password");
           }
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-          console.log("err");
           throw new Error(
             error.response?.data?.message || "An unexpected error occurred"
           );
@@ -65,7 +55,6 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (token.user) {
-        console.log("session, token");
         session.user = {
           id: token.user.id,
           name: token.user.name,
@@ -77,7 +66,6 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user }) {
       if (user) {
-        console.log("Before setting token.user:", token, user);
         token.user = {
           id: user.id?.toString() || "",
           name: user.name || "",
@@ -90,7 +78,6 @@ export const authOptions: NextAuthOptions = {
           email: "",
         };
       }
-      console.log("After setting token.user:", token);
       return token;
     },
   },

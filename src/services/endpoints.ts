@@ -3,6 +3,7 @@ const endpoints = {
     login: "/auth/login",
     signup: "/auth/signup",
   },
+  expense: "/expense/",
 };
 
 export default endpoints;
