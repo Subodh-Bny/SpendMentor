@@ -3,7 +3,6 @@ import { internalError } from "./internalError";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/user.model";
 import bcryptjs from "bcryptjs";
-import generateTokenAndCookie from "@/utils/generateTokenAndCookie";
 
 export const signup = async (req: Request) => {
   if (req.method !== "POST") {
@@ -51,56 +50,5 @@ export const signup = async (req: Request) => {
     );
   } catch (error) {
     return internalError("Error in signup controller", error);
-  }
-};
-
-export const login = async (req: Request) => {
-  await dbConnect();
-
-  try {
-    const { email, password } = await req.json();
-    if (!email || !password) {
-      return NextResponse.json(
-        { message: "All fields are required." },
-        { status: 400 }
-      );
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return NextResponse.json(
-        { message: "Invalid email or password" },
-        { status: 404 }
-      );
-    }
-
-    const isPasswordCorrect = await bcryptjs.compare(
-      password,
-      user?.password || ""
-    );
-
-    if (!isPasswordCorrect) {
-      return NextResponse.json(
-        { message: "Invalid email or password" },
-        { status: 404 }
-      );
-    }
-
-    const token = await generateTokenAndCookie(user?.id);
-
-    return NextResponse.json(
-      {
-        message: "Logged in",
-        data: {
-          _id: user?._id,
-          username: user?.username,
-          email: user?.email,
-        },
-        token,
-      },
-      { status: 200 }
-    );
-  } catch (error: unknown) {
-    return internalError("Error in  login  controller", error);
   }
 };

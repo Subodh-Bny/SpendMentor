@@ -14,17 +14,14 @@ import {
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
 import routes from "@/config/routes";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { ClipLoader } from "react-spinners";
-import toast from "react-hot-toast";
+import useLogin from "@/hooks/useLogin";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const router = useRouter();
+  const { login, loading } = useLogin();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -32,27 +29,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false, // Ensure no automatic redirects
-    });
-
-    // Debugging: Log the entire response object
-    // console.log("SignIn Response:", res);
-
-    if (res?.ok) {
-      toast.success("Login successful!");
-      setEmail("");
-      setPassword("");
-      router.push("/dashboard");
-    } else if (res?.error) {
-      toast.error(res.error || "An unexpected error occurred.");
-    }
-
-    setLoading(false);
+    await login(email, password);
   };
 
   return (

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import AllContextProvider from "@/context/AllContextProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,41 +21,43 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} antialiased`}>
-        {children}
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            success: {
-              style: {
-                background: "#1d4ed8", // Use the primary color from CSS variables
-                color: "white", // Optionally, adjust the text color to match the foreground color
-                padding: "12px 24px",
-                borderRadius: "8px",
+      <AllContextProvider>
+        <body className={`${inter.className} antialiased`}>
+          {children}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              success: {
+                style: {
+                  background: "#1d4ed8",
+                  color: "white",
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                },
+                duration: 4000,
               },
-              duration: 4000, // Duration for success toasts
-            },
-            error: {
-              style: {
-                background: "#dc2626", // Use a destructive color for errors (or choose another color)
-                color: "white", // Adjust text color for errors
-                padding: "12px 24px",
-                borderRadius: "8px",
+              error: {
+                style: {
+                  background: "#dc2626",
+                  color: "white",
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                },
+                duration: 4000,
               },
-              duration: 4000, // Duration for error toasts
-            },
-            loading: {
-              style: {
-                background: "var(--muted)", // A muted background for loading toasts
-                color: "var(--muted-foreground)",
-                padding: "12px 24px",
-                borderRadius: "8px",
+              loading: {
+                style: {
+                  background: "var(--muted)",
+                  color: "var(--muted-foreground)",
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                },
+                duration: 3000,
               },
-              duration: 3000, // Duration for loading toasts
-            },
-          }}
-        />
-      </body>
+            }}
+          />
+        </body>
+      </AllContextProvider>
     </html>
   );
 }
