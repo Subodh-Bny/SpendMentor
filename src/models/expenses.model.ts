@@ -3,10 +3,9 @@ import mongoose, { Schema } from "mongoose";
 
 const expenseSchema = new Schema<IExpenses>(
   {
-    date: { type: String, require: true },
+    date: { type: Date, require: true },
     amount: {
-      type: Number,
-
+      type: String,
       require: true,
       trim: true,
     },
@@ -28,6 +27,8 @@ const expenseSchema = new Schema<IExpenses>(
   }
 );
 
-const Expense = mongoose.model<IExpenses>("Expense", expenseSchema);
+const Expense =
+  mongoose.models.Expense ||
+  mongoose.model<IExpenses>("Expense", expenseSchema);
 
 export default Expense;

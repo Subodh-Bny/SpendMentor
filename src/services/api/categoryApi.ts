@@ -1,24 +1,24 @@
 import endpoints from "../endpoints";
 import axiosInstance from "../axiosInstance";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IApiResponse, IExpenses, IQueryResponse } from "@/types/types";
+import { IApiResponse, ICategory, IQueryResponse } from "@/types/types";
 import { AxiosError, AxiosResponse } from "axios";
 import toast from "react-hot-toast";
 import { requestError } from "./requestError";
 import { useSession } from "next-auth/react";
 
-export const useAddExpense = () => {
+export const useCreateCategory = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ["expense"],
-    mutationFn: async (data: IExpenses) => {
+    mutationKey: ["category"],
+    mutationFn: async (data: ICategory) => {
       const res: AxiosResponse<IQueryResponse> =
-        await axiosInstance.post<IApiResponse>(endpoints.expense, data);
+        await axiosInstance.post<IApiResponse>(endpoints.category, data);
       return res.data;
     },
     onSuccess: (data) => {
       toast.success(data.message);
-      queryClient.invalidateQueries({ queryKey: ["expense"] });
+      queryClient.invalidateQueries({ queryKey: ["category"] });
     },
     onError: (error) => {
       requestError(error as AxiosError<IApiResponse, unknown>);
@@ -26,21 +26,21 @@ export const useAddExpense = () => {
   });
 };
 
-export const useUpdateExpense = () => {
+export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ["expense"],
-    mutationFn: async (data: IExpenses) => {
+    mutationKey: ["category"],
+    mutationFn: async (data: ICategory) => {
       const res: AxiosResponse<IQueryResponse> =
         await axiosInstance.put<IApiResponse>(
-          endpoints.expense + data.id,
+          endpoints.category + data.id,
           data
         );
       return res.data;
     },
     onSuccess: (data) => {
       toast.success(data.message);
-      queryClient.invalidateQueries({ queryKey: ["expense"] });
+      queryClient.invalidateQueries({ queryKey: ["category"] });
     },
     onError: (error) => {
       requestError(error as AxiosError<IApiResponse, unknown>);
@@ -48,18 +48,18 @@ export const useUpdateExpense = () => {
   });
 };
 
-export const useDeleteExpense = () => {
+export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ["expense"],
+    mutationKey: ["category"],
     mutationFn: async (id: string) => {
       const res: AxiosResponse<IQueryResponse> =
-        await axiosInstance.delete<IApiResponse>(endpoints.expense + id);
+        await axiosInstance.delete<IApiResponse>(endpoints.category + id);
       return res.data;
     },
     onSuccess: (data) => {
       toast.success(data.message);
-      queryClient.invalidateQueries({ queryKey: ["expense"] });
+      queryClient.invalidateQueries({ queryKey: ["category"] });
     },
     onError: (error) => {
       requestError(error as AxiosError<IApiResponse, unknown>);
@@ -67,14 +67,14 @@ export const useDeleteExpense = () => {
   });
 };
 
-export const useGetExpenses = () => {
+export const useGetCategories = () => {
   const { data: session } = useSession();
   const userId = session?.user.id;
   return useQuery({
-    queryKey: ["expense"],
+    queryKey: ["category"],
     queryFn: async () => {
-      const res: AxiosResponse<IQueryResponse<IExpenses[]>> =
-        await axiosInstance.get<IApiResponse>(endpoints.expense + userId);
+      const res: AxiosResponse<IQueryResponse<ICategory[]>> =
+        await axiosInstance.get<IApiResponse>(endpoints.category + userId);
       return res.data?.data || [];
     },
   });

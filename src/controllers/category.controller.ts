@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { internalError } from "./internalError";
 import dbConnect from "@/lib/dbConnect";
-import Expense from "@/models/expenses.model";
+import Category from "@/models/category.model";
 
-export const addExpenses = async (req: Request) => {
+export const createCategory = async (req: Request) => {
   if (req.method !== "POST") {
     return NextResponse.json(
       {
@@ -16,27 +16,27 @@ export const addExpenses = async (req: Request) => {
   try {
     await dbConnect();
 
-    const { date, description, amount, category } = await req.json();
+    const { name } = await req.json();
 
-    const newExpense = new Expense({
-      date,
-      description,
-      amount,
-      category,
+    const newCategory = new Category({
+      name,
     });
 
-    await newExpense.save();
+    await newCategory.save();
 
     return NextResponse.json(
-      { message: "Expense added successfully", data: newExpense },
+      { message: "Category created successfully", data: newCategory },
       { status: 201 }
     );
   } catch (error) {
-    return internalError("Error in addExpense controller", error);
+    return internalError("Error in createCategory controller", error);
   }
 };
 
-export const getExpenses = async (req: Request) => {
+export const getCategories = async (
+  req: Request,
+  { params }: { params: Promise<{ userId: string }> }
+) => {
   if (req.method !== "GET") {
     return NextResponse.json(
       {
@@ -48,19 +48,19 @@ export const getExpenses = async (req: Request) => {
 
   try {
     await dbConnect();
-
-    const expenses = await Expense.find();
+    const { userId } = await params;
+    const categories = await Category.find({ user: userId });
 
     return NextResponse.json(
-      { message: "Expenses fetched successfully", data: expenses },
+      { message: "Categories fetched successfully", data: categories },
       { status: 200 }
     );
   } catch (error) {
-    return internalError("Error in getExpenses controller", error);
+    return internalError("Error in getCategory controller", error);
   }
 };
 
-export const deleteExpense = async (
+export const deleteCategory = async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -78,18 +78,18 @@ export const deleteExpense = async (
 
     const { id } = await params;
 
-    const deletedExpense = await Expense.findByIdAndDelete(id);
+    const deletedCategory = await Category.findByIdAndDelete(id);
 
     return NextResponse.json(
-      { message: "Expense deleted successfully", data: deletedExpense },
+      { message: "Category deleted successfully", data: deletedCategory },
       { status: 202 }
     );
   } catch (error) {
-    return internalError("Error in deleteExpense controller", error);
+    return internalError("Error in deleteCategory controller", error);
   }
 };
 
-export const updateExpense = async (
+export const updateCategory = async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -105,21 +105,20 @@ export const updateExpense = async (
   try {
     await dbConnect();
 
-    const { date, description, amount, category } = await req.json();
+    const { name } = await req.json();
     const { id } = await params;
 
-    const updatedExpense = await Expense.findByIdAndUpdate(id, {
-      date,
-      description,
-      amount,
-      category,
-    });
+    const updatedCategory = await Category.findByIdAndUpdate(
+      id,
+      { name },
+      { new: true }
+    );
 
     return NextResponse.json(
-      { message: "Expense updated successfully", data: updatedExpense },
+      { message: "Category updated successfully", data: updatedCategory },
       { status: 200 }
     );
   } catch (error) {
-    return internalError("Error in updateExpense controller", error);
+    return internalError("Error in updateCategory controller", error);
   }
 };

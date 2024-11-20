@@ -1,3 +1,5 @@
+"use client";
+import AddExpense from "@/components/expenses/add-expense";
 import {
   Table,
   TableBody,
@@ -8,51 +10,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useGetExpenses } from "@/services/api/expenseApi";
+import { format } from "date-fns";
 
 export default function ExpenseTable() {
-  const expenses = [
-    {
-      id: 1,
-      date: "2024-03-01",
-      description: "Office Supplies",
-      category: "Supplies",
-      amount: 150.75,
-    },
-    {
-      id: 2,
-      date: "2024-03-03",
-      description: "Client Lunch",
-      category: "Meals",
-      amount: 85.2,
-    },
-    {
-      id: 3,
-      date: "2024-03-05",
-      description: "Software Subscription",
-      category: "Software",
-      amount: 299.99,
-    },
-    {
-      id: 4,
-      date: "2024-03-10",
-      description: "Travel Expenses",
-      category: "Travel",
-      amount: 523.5,
-    },
-    {
-      id: 5,
-      date: "2024-03-15",
-      description: "Office Rent",
-      category: "Rent",
-      amount: 2000.0,
-    },
-  ];
+  const { data: expenses } = useGetExpenses();
 
-  const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const total = expenses?.reduce(
+    (sum, expense) => sum + parseInt(expense.amount),
+    0
+  );
 
   return (
     <div className="container max-w-6xl mx-auto py-10 px-4">
-      <h2 className="text-2xl font-bold mb-4">Expense Report</h2>
+      <div className="flex w-full justify-between">
+        {" "}
+        <h2 className="text-2xl font-bold mb-4">Expense Report</h2>
+        <AddExpense />
+      </div>
+
       <div className="rounded-md border">
         <Table>
           <TableCaption>A list of your recent expenses.</TableCaption>
@@ -65,15 +41,18 @@ export default function ExpenseTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {expenses.map((expense) => (
+            {expenses?.map((expense) => (
               <TableRow key={expense.id}>
-                <TableCell className="font-medium">{expense.date}</TableCell>
+                <TableCell className="font-medium">
+                  {format(expense.date, "MMMM do, yyyy")}
+                </TableCell>
                 <TableCell>{expense.description}</TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {expense.category}
+                  {typeof expense.category === "object" &&
+                    expense.category.name}
                 </TableCell>
                 <TableCell className="text-right">
-                  ${expense.amount.toFixed(2)}
+                  ${parseInt(expense.amount).toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}
@@ -82,7 +61,7 @@ export default function ExpenseTable() {
             <TableRow>
               <TableCell colSpan={3}>Total</TableCell>
               <TableCell className="text-right font-bold">
-                ${total.toFixed(2)}
+                ${total?.toFixed(2) || 0.0}
               </TableCell>
             </TableRow>
           </TableFooter>

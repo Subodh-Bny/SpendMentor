@@ -4,6 +4,7 @@ const endpoints = {
     signup: "/auth/signup",
   },
   expense: "/expense/",
+  category: "/category/",
 };
 
 export default endpoints;

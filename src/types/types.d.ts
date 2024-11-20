@@ -1,4 +1,4 @@
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 
 type IQueryResponse<T = unknown> = {
   success: boolean;
@@ -19,10 +19,14 @@ interface IUser extends Document {
   confirmPassword?: string;
 }
 
-interface IExpenses extends Document {
+interface ICategory extends Document {
+  name: string;
+  user?: string;
+}
+interface IExpenses {
   id?: string;
-  date: string;
-  amount: number;
-  category: Types.ObjectId;
+  date: Date;
+  amount: string;
+  category: string | ICategory;
   description?: string;
 }
