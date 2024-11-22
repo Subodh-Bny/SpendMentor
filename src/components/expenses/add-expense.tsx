@@ -43,9 +43,14 @@ import { expenseSchema } from "@/lib/validations/expense";
 import { useAddExpense } from "@/services/api/expenseApi";
 import { ClipLoader } from "react-spinners";
 import { Textarea } from "../ui/textarea";
+import {
+  useCreateCategory,
+  useGetCategories,
+} from "@/services/api/categoryApi";
 
 export default function AddExpense() {
   const [open, setOpen] = useState(false);
+  const { data: categories } = useGetCategories();
 
   const form = useForm<z.infer<typeof expenseSchema>>({
     resolver: zodResolver(expenseSchema),
@@ -54,22 +59,61 @@ export default function AddExpense() {
       amount: "0",
       date: new Date(),
       category: "",
+      newCategory: "",
     },
   });
-  const { mutate: addExpense, isPending: addExpensePending } = useAddExpense();
+
+  const {
+    mutate: addExpense,
+    isPending: addExpensePending,
+    error: addExpenseError,
+  } = useAddExpense();
+  const {
+    mutate: createCategory,
+    isPending: createCategoryPending,
+    error: createCategoryError,
+  } = useCreateCategory();
 
   useEffect(() => {
-    if (!addExpensePending) {
+    if (
+      !addExpensePending &&
+      !createCategoryPending &&
+      !addExpenseError &&
+      !createCategoryError
+    ) {
       setOpen(false);
     }
-  }, [addExpensePending]);
+  }, [
+    addExpensePending,
+    createCategoryPending,
+    addExpenseError,
+    createCategoryError,
+  ]);
 
-  console.log(form.watch("amount"));
-  function onSubmit(values: z.infer<typeof expenseSchema>) {
-    console.log(values);
-    addExpense(values);
+  async function onSubmit(values: z.infer<typeof expenseSchema>) {
+    let category;
+    if (values.category === "other" && values.newCategory) {
+      createCategory(
+        { name: values.newCategory },
+        {
+          onSuccess: (response) => {
+            category = response?.data?.id;
+            addExpense({
+              ...values,
+              category: category || "",
+            });
 
-    form.reset();
+            form.reset();
+          },
+          onError: (error) => {
+            console.error("Error creating category:", error);
+          },
+        }
+      );
+    } else {
+      addExpense(values);
+      form.reset();
+    }
   }
 
   return (
@@ -172,14 +216,12 @@ export default function AddExpense() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="food">Food</SelectItem>
-                      <SelectItem value="transportation">
-                        Transportation
-                      </SelectItem>
-                      <SelectItem value="utilities">Utilities</SelectItem>
-                      <SelectItem value="entertainment">
-                        Entertainment
-                      </SelectItem>
+                      {categories?.map((category) => (
+                        <SelectItem key={category.id} value={category.id || ""}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -187,6 +229,21 @@ export default function AddExpense() {
                 </FormItem>
               )}
             />
+            {form.watch("category") === "other" && (
+              <FormField
+                control={form.control}
+                name="newCategory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>New Category</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter new category" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <DialogFooter>
               <Button type="submit" disabled={addExpensePending}>
                 {addExpensePending ? <ClipLoader size={15} /> : "Save Expense"}

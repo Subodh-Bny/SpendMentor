@@ -19,7 +19,8 @@ interface IUser extends Document {
   confirmPassword?: string;
 }
 
-interface ICategory extends Document {
+interface ICategory {
+  id?: string;
   name: string;
   user?: string;
 }

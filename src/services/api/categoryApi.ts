@@ -5,19 +5,17 @@ import { IApiResponse, ICategory, IQueryResponse } from "@/types/types";
 import { AxiosError, AxiosResponse } from "axios";
 import toast from "react-hot-toast";
 import { requestError } from "./requestError";
-import { useSession } from "next-auth/react";
 
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ["category"],
     mutationFn: async (data: ICategory) => {
-      const res: AxiosResponse<IQueryResponse> =
+      const res: AxiosResponse<IQueryResponse<ICategory>> =
         await axiosInstance.post<IApiResponse>(endpoints.category, data);
       return res.data;
     },
-    onSuccess: (data) => {
-      toast.success(data.message);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["category"] });
     },
     onError: (error) => {
@@ -50,6 +48,7 @@ export const useUpdateCategory = () => {
 
 export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationKey: ["category"],
     mutationFn: async (id: string) => {
@@ -68,13 +67,11 @@ export const useDeleteCategory = () => {
 };
 
 export const useGetCategories = () => {
-  const { data: session } = useSession();
-  const userId = session?.user.id;
   return useQuery({
     queryKey: ["category"],
     queryFn: async () => {
       const res: AxiosResponse<IQueryResponse<ICategory[]>> =
-        await axiosInstance.get<IApiResponse>(endpoints.category + userId);
+        await axiosInstance.get<IApiResponse>(endpoints.category + "user");
       return res.data?.data || [];
     },
   });

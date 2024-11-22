@@ -7,6 +7,7 @@ export const expenseSchema = z.object({
   }),
   description: z.string().optional(),
   category: z.string().min(1, "Category is required"),
+  newCategory: z.string().optional(),
 });
 
 export type ExpenseInput = z.infer<typeof expenseSchema>;
