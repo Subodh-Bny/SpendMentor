@@ -71,7 +71,7 @@ export const useGetCategories = () => {
     queryKey: ["category"],
     queryFn: async () => {
       const res: AxiosResponse<IQueryResponse<ICategory[]>> =
-        await axiosInstance.get<IApiResponse>(endpoints.category + "user");
+        await axiosInstance.get<IApiResponse>(endpoints.category);
       return res.data?.data || [];
     },
   });

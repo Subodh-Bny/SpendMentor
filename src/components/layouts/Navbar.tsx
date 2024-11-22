@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
 import {
@@ -22,7 +21,6 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from "next-themes";
-import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import routes from "@/config/routes";
 
@@ -53,8 +51,6 @@ const NavLinks = [
 ];
 const Navbar = () => {
   const { setTheme } = useTheme();
-
-  const { data: session } = useSession();
 
   return (
     <nav className="bg-background border-b">
@@ -91,10 +87,7 @@ const Navbar = () => {
                   <SheetTrigger>
                     <Avatar className="w-9 h-9">
                       <AvatarImage
-                        src={
-                          "https://avatar.iran.liara.run/username?username=" +
-                          session?.user.name
-                        }
+                        src={"https://avatar.iran.liara.run/username?username="}
                         className="w-9 h-9 rounded-full"
                       />
                       <AvatarFallback className="text-sm">USR</AvatarFallback>
@@ -106,8 +99,7 @@ const Navbar = () => {
                         <Avatar className="w-9 h-9">
                           <AvatarImage
                             src={
-                              "https://avatar.iran.liara.run/username?username=" +
-                              session?.user.name
+                              "https://avatar.iran.liara.run/username?username="
                             }
                             className="w-9 h-9 rounded-full"
                           />
@@ -118,10 +110,10 @@ const Navbar = () => {
 
                         <span className="flex flex-col">
                           <span className="font-medium text-base mx-0">
-                            {session?.user.name || "User"}
+                            {/* {session?.user.name || "User"} */}
                           </span>
                           <span className="text-sm text-gray-500 font-normal w-[100px] sm:w-full text-ellipsis overflow-hidden">
-                            {session?.user.email || ""}
+                            {"safasdf"}
                           </span>
                         </span>
                       </SheetTitle>
@@ -139,10 +131,7 @@ const Navbar = () => {
                         </li>
                       ))}
                       <hr className="mt-2" />
-                      <li
-                        onClick={() => signOut()}
-                        className="text-red-500  hover:bg-accent px-2 py-1 rounded-sm transition-all mt-2"
-                      >
+                      <li className="text-red-500  hover:bg-accent px-2 py-1 rounded-sm transition-all mt-2">
                         Sign out
                       </li>
                     </ul>

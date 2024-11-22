@@ -1,5 +1,9 @@
-import { createCategory } from "@/controllers/category.controller";
+import {
+  createCategory,
+  getCategories,
+} from "@/controllers/category.controller";
 
 const POST = createCategory;
+const GET = getCategories;
 
-export { POST };
+export { POST, GET };

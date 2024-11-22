@@ -33,10 +33,7 @@ export const createCategory = async (req: Request) => {
   }
 };
 
-export const getCategories = async (
-  req: Request,
-  { params }: { params: Promise<{ userId: string }> }
-) => {
+export const getCategories = async (req: Request) => {
   if (req.method !== "GET") {
     return NextResponse.json(
       {
@@ -48,8 +45,8 @@ export const getCategories = async (
 
   try {
     await dbConnect();
-    const { userId } = await params;
-    const categories = await Category.find({ user: userId });
+
+    const categories = await Category.find();
 
     return NextResponse.json(
       { message: "Categories fetched successfully", data: categories },
