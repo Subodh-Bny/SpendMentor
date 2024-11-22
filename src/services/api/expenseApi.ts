@@ -1,11 +1,9 @@
 import endpoints from "../endpoints";
 import axiosInstance from "../axiosInstance";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IApiResponse, IExpenses, IQueryResponse } from "@/types/types";
 import { AxiosError, AxiosResponse } from "axios";
 import toast from "react-hot-toast";
 import { requestError } from "./requestError";
-import { useSession } from "next-auth/react";
 
 export const useAddExpense = () => {
   const queryClient = useQueryClient();
@@ -68,13 +66,11 @@ export const useDeleteExpense = () => {
 };
 
 export const useGetExpenses = () => {
-  const { data: session } = useSession();
-  const userId = session?.user.id;
   return useQuery({
     queryKey: ["expense"],
     queryFn: async () => {
       const res: AxiosResponse<IQueryResponse<IExpenses[]>> =
-        await axiosInstance.get<IApiResponse>(endpoints.expense + userId);
+        await axiosInstance.get<IApiResponse>(endpoints.expense);
       return res.data?.data || [];
     },
   });

@@ -1,4 +1,3 @@
-import { IApiResponse } from "@/types/types";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 

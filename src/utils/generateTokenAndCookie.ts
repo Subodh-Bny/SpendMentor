@@ -11,12 +11,12 @@ const generateTokenAndCookie = async (
   const cookiesStore = await cookies();
 
   cookiesStore.set("jwt", token, {
-    maxAge: 15 * 24 * 60 * 1000,
-    httpOnly: false,
+    maxAge: 15 * 24 * 60 * 60, // Max age in seconds
+    httpOnly: true, // For security
     sameSite: "strict",
-    secure: process.env.NODE_ENV! == "development",
+    secure: process.env.NODE_ENV !== "development", // Secure in non-dev environments
   });
-
+  console.log(token);
   return token;
 };
 

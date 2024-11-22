@@ -14,6 +14,8 @@ import {
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
 import routes from "@/config/routes";
+import { useLogin } from "@/services/api/authApi";
+import { ClipLoader } from "react-spinners";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
@@ -24,8 +26,11 @@ export default function LoginPage() {
     setShowPassword(!showPassword);
   };
 
+  const { mutate: login, isPending: loading } = useLogin();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    login({ email, password });
   };
 
   return (
@@ -89,17 +94,13 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-              Login
+            <Button
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {loading ? <ClipLoader size={20} /> : "Log in"}
             </Button>
           </form>
-          <Button
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            // onClick={() => signIn()}
-          >
-            Login
-          </Button>
-
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Input

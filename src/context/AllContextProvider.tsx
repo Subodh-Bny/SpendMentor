@@ -1,14 +1,9 @@
 "use client";
-import { SessionProvider } from "next-auth/react";
 import React from "react";
 import { QueryProvider } from "./QueryProvider";
 
 const AllContextProvider = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <SessionProvider>
-      <QueryProvider>{children}</QueryProvider>
-    </SessionProvider>
-  );
+  return <QueryProvider>{children}</QueryProvider>;
 };
 
 export default AllContextProvider;

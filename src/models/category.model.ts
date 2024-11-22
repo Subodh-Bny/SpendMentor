@@ -1,4 +1,3 @@
-import { ICategory } from "@/types/types";
 import mongoose, { Schema } from "mongoose";
 
 const categorySchema = new Schema<ICategory>(

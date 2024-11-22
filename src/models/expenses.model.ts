@@ -1,4 +1,3 @@
-import { IExpenses } from "@/types/types";
 import mongoose, { Schema } from "mongoose";
 
 const expenseSchema = new Schema<IExpenses>(

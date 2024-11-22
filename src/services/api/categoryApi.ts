@@ -1,7 +1,6 @@
 import endpoints from "../endpoints";
 import axiosInstance from "../axiosInstance";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IApiResponse, ICategory, IQueryResponse } from "@/types/types";
 import { AxiosError, AxiosResponse } from "axios";
 import toast from "react-hot-toast";
 import { requestError } from "./requestError";

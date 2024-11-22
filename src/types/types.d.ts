@@ -1,5 +1,3 @@
-import { Document } from "mongoose";
-
 type IQueryResponse<T = unknown> = {
   success: boolean;
   message: string;
@@ -11,9 +9,9 @@ interface IApiResponse {
   message: string;
 }
 
-interface IUser extends Document {
+interface IUser {
   id?: string;
-  name: string;
+  name?: string;
   email: string;
   password: string;
   confirmPassword?: string;
