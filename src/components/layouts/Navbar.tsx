@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import routes from "@/config/routes";
+import { AuthContext } from "@/context/AuthContext";
 
 const NavLinks = [
   {
@@ -50,7 +51,9 @@ const NavLinks = [
   },
 ];
 const Navbar = () => {
+  const { logout } = React.useContext(AuthContext);
   const { setTheme } = useTheme();
+  const { user } = React.useContext(AuthContext);
 
   return (
     <nav className="bg-background border-b">
@@ -99,7 +102,8 @@ const Navbar = () => {
                         <Avatar className="w-9 h-9">
                           <AvatarImage
                             src={
-                              "https://avatar.iran.liara.run/username?username="
+                              "https://avatar.iran.liara.run/username?username=" +
+                              user?.name
                             }
                             className="w-9 h-9 rounded-full"
                           />
@@ -110,10 +114,10 @@ const Navbar = () => {
 
                         <span className="flex flex-col">
                           <span className="font-medium text-base mx-0">
-                            {/* {session?.user.name || "User"} */}
+                            {user?.name || "User"}
                           </span>
                           <span className="text-sm text-gray-500 font-normal w-[100px] sm:w-full text-ellipsis overflow-hidden">
-                            {"safasdf"}
+                            {user?.name || "User"}
                           </span>
                         </span>
                       </SheetTitle>
@@ -131,7 +135,10 @@ const Navbar = () => {
                         </li>
                       ))}
                       <hr className="mt-2" />
-                      <li className="text-red-500  hover:bg-accent px-2 py-1 rounded-sm transition-all mt-2">
+                      <li
+                        className="text-red-500  hover:bg-accent px-2 py-1 rounded-sm transition-all mt-2"
+                        onClick={logout}
+                      >
                         Sign out
                       </li>
                     </ul>

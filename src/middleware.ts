@@ -1,67 +1,60 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import routes from "./config/routes";
-import { cookies } from "next/headers";
-// import dbConnect from "./lib/dbConnect";
-// import jwt from "jsonwebtoken";
-// import User from "./models/user.model";
-// import { internalError } from "./controllers/internalError";
+import { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-export async function middleware(request: NextRequest) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("jwt")?.value;
-  console.log(token);
-  const url = request.nextUrl;
-  if (
-    token &&
-    (url.pathname.startsWith(routes.auth.login) ||
-      url.pathname.startsWith(routes.auth.signUp))
-  ) {
-    url.pathname = routes.dashboard.home;
-    return NextResponse.redirect(new URL(routes.dashboard.home, request.url));
+export async function middleware(req: NextRequest) {
+  const token = req.cookies.get("jwt")?.value; // Retrieve JWT from cookies
+  const url = req.nextUrl;
+
+  // Redirect users without a token trying to access /dashboard/:path*
+  if (url.pathname.startsWith("/dashboard/") && !token) {
+    url.pathname = "/auth/login";
+    return NextResponse.redirect(url);
   }
-  if (!token && url.pathname.startsWith(routes.dashboard.home)) {
-    url.pathname = routes.auth.login;
+  if (url.pathname.startsWith("/auth/") && token) {
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 
-  // if (
-  //   url.pathname.startsWith("/api/") &&
-  //   !url.pathname.startsWith("/api/auth/") &&
-  //   !token
-  // ) {
-  //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  // }
+  // Protect API routes other than /api/auth/*
+  if (
+    url.pathname.startsWith("/api/") &&
+    !url.pathname.startsWith("/api/auth/") &&
+    !token
+  ) {
+    return NextResponse.json(
+      { message: "Unauthorized - No Token Provided" },
+      { status: 401 }
+    );
+  }
 
-  // if (
-  //   url.pathname.startsWith("/api/") &&
-  //   !url.pathname.startsWith("/api/auth/") &&
-  //   token
-  // ) {
-  //   try {
-  //     const decoded = jwt.verify(
-  //       token,
-  //       process.env.JWT_SECRET || ""
-  //     ) as JwtPayloadWithUserId;
-  //     if (!decoded) {
-  //       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-  //     }
-
-  //     await dbConnect();
-  //     const user = await User.findById(decoded.userId).select("-password");
-
-  //     if (!user) {
-  //       return NextResponse.json({ message: "Unknown user" }, { status: 401 });
-  //     }
-  //     request.user = user;
-  //   } catch (error) {
-  //     return internalError("Error in middleware", error);
-  //   }
-  // }
+  // Validate token if it exists
+  if (token) {
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+      await jwtVerify(token, secret);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      // Redirect invalid token requests for /dashboard/:path*
+      if (url.pathname.startsWith("/dashboard/")) {
+        url.pathname = "/auth/login";
+        return NextResponse.redirect(url);
+      }
+      console.log(error);
+      // Respond with 401 for invalid tokens on /api/:path*
+      if (url.pathname.startsWith("/api/")) {
+        return NextResponse.json(
+          { message: "Unauthorized - Invalid Token" },
+          { status: 401 }
+        );
+      }
+    }
+  }
 
   return NextResponse.next();
 }
 
+// Specify route matcher
 export const config = {
-  matcher: ["/auth/:path*", "/", "/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/api/:path*", "/auth/:path*"], // Protects dashboard and API routes
 };
