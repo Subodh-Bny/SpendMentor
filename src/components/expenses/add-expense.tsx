@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CalendarIcon, Plus } from "lucide-react";
+import { Dispatch, SetStateAction, useEffect } from "react";
+import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -16,8 +15,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+
 import {
   Form,
   FormControl,
@@ -39,22 +38,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { expenseSchema } from "@/lib/validations/expense";
-import { useAddExpense } from "@/services/api/expenseApi";
+import { expenseSchema, ExpenseInput } from "@/lib/validations/expense";
+import { useAddExpense, useUpdateExpense } from "@/services/api/expenseApi";
 import { ClipLoader } from "react-spinners";
-import { Textarea } from "../ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useCreateCategory,
   useGetCategories,
 } from "@/services/api/categoryApi";
 
-export default function AddExpense() {
-  const [open, setOpen] = useState(false);
+import toast from "react-hot-toast";
+
+export default function AddExpense({
+  open,
+  setOpen,
+  expense,
+  setExpense,
+}: {
+  open: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+  setExpense: Dispatch<SetStateAction<IExpense | undefined>>;
+  expense?: IExpense;
+}) {
   const { data: categories } = useGetCategories();
 
-  const form = useForm<z.infer<typeof expenseSchema>>({
+  const form = useForm<ExpenseInput>({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
+      id: "",
+
       description: "",
       amount: "0",
       date: new Date(),
@@ -69,61 +81,111 @@ export default function AddExpense() {
     error: addExpenseError,
   } = useAddExpense();
   const {
+    mutate: updateExpense,
+    isPending: updateExpensePending,
+    error: updateExpenseError,
+  } = useUpdateExpense();
+  const {
     mutate: createCategory,
     isPending: createCategoryPending,
     error: createCategoryError,
   } = useCreateCategory();
 
+  const isLoading =
+    addExpensePending || createCategoryPending || updateExpensePending;
+
+  const resetFormValues = () => {
+    if (expense) {
+      form.reset({
+        id: expense.id,
+        description: expense.description || "",
+        amount: expense.amount.toString(),
+        date: expense.date,
+        category:
+          typeof expense.category === "object"
+            ? expense.category.id
+            : expense.category,
+        newCategory: "",
+      });
+    } else {
+      form.reset({
+        description: "",
+        amount: "0",
+        date: new Date(),
+        category: "",
+        newCategory: "",
+      });
+    }
+  };
+
+  useEffect(() => {
+    resetFormValues();
+  }, [expense]);
+
+  useEffect(() => {
+    if (addExpenseError || createCategoryError || updateExpenseError) {
+      toast.error(
+        addExpenseError?.message ||
+          createCategoryError?.message ||
+          updateExpenseError?.message ||
+          "Something went wrong!"
+      );
+    }
+  }, [addExpenseError, createCategoryError, updateExpenseError]);
+
   useEffect(() => {
     if (
-      !addExpensePending &&
-      !createCategoryPending &&
+      !isLoading &&
       !addExpenseError &&
-      !createCategoryError
+      !createCategoryError &&
+      !updateExpenseError
     ) {
       setOpen(false);
+      form.reset();
     }
   }, [
-    addExpensePending,
-    createCategoryPending,
+    isLoading,
     addExpenseError,
     createCategoryError,
+    updateExpenseError,
+    setOpen,
   ]);
 
-  async function onSubmit(values: z.infer<typeof expenseSchema>) {
-    let category;
+  const handleOpenChange = () => {
+    setOpen(false);
+    setExpense(undefined);
+  };
+
+  const handleSaveExpense = (values: ExpenseInput) => {
+    if (expense) {
+      updateExpense(values);
+    } else {
+      addExpense(values);
+    }
+    form.reset();
+  };
+
+  async function onSubmit(values: ExpenseInput) {
     if (values.category === "other" && values.newCategory) {
       createCategory(
         { name: values.newCategory },
         {
           onSuccess: (response) => {
-            category = response?.data?.id;
-            addExpense({
-              ...values,
-              category: category || "",
-            });
-
-            form.reset();
+            const newCategoryId = response?.data?.id || "";
+            handleSaveExpense({ ...values, category: newCategoryId });
           },
           onError: (error) => {
-            console.error("Error creating category:", error);
+            toast.error(error.message || "Failed to create category.");
           },
         }
       );
     } else {
-      addExpense(values);
-      form.reset();
+      handleSaveExpense(values);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Expense
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Expense</DialogTitle>
@@ -187,7 +249,7 @@ export default function AddExpense() {
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={new Date(field.value)}
+                        selected={field.value}
                         onSelect={field.onChange}
                         disabled={(date) =>
                           date > new Date() || date < new Date("1900-01-01")
@@ -217,11 +279,13 @@ export default function AddExpense() {
                     </FormControl>
                     <SelectContent>
                       {categories?.map((category) => (
-                        <SelectItem key={category.id} value={category.id || ""}>
+                        <SelectItem
+                          key={category.id}
+                          value={category?.id || ""}
+                        >
                           {category.name}
                         </SelectItem>
                       ))}
-
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -244,9 +308,22 @@ export default function AddExpense() {
                 )}
               />
             )}
+            {/* <FormField
+              control={form.control}
+              name="user"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>User</FormLabel>
+                  <FormControl>
+                    <Input placeholder="User ID" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
             <DialogFooter>
-              <Button type="submit" disabled={addExpensePending}>
-                {addExpensePending ? <ClipLoader size={15} /> : "Save Expense"}
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? <ClipLoader size={15} /> : "Save Expense"}
               </Button>
             </DialogFooter>
           </form>

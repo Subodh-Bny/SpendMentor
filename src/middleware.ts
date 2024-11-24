@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
+import { JWTPayload, jwtVerify } from "jose";
+
+interface CustomJWTPayload extends JWTPayload {
+  userId: string;
+}
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("jwt")?.value; // Retrieve JWT from cookies
@@ -32,15 +36,24 @@ export async function middleware(req: NextRequest) {
   if (token) {
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-      await jwtVerify(token, secret);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const decoded = (await jwtVerify(token, secret)) as {
+        payload: CustomJWTPayload;
+      };
+      const userId = decoded.payload.userId;
+
+      // Pass user ID to subsequent middleware or handler via headers
+      const response = NextResponse.next();
+      response.headers.set("X-User-Id", userId);
+      return response;
     } catch (error) {
+      console.error("Token verification error:", error);
+
       // Redirect invalid token requests for /dashboard/:path*
-      if (url.pathname.startsWith("/dashboard/")) {
+      if (url.pathname.startsWith("/dashboard")) {
         url.pathname = "/auth/login";
         return NextResponse.redirect(url);
       }
-      console.log(error);
+
       // Respond with 401 for invalid tokens on /api/:path*
       if (url.pathname.startsWith("/api/")) {
         return NextResponse.json(

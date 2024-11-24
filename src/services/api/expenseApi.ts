@@ -9,7 +9,7 @@ export const useAddExpense = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ["expense"],
-    mutationFn: async (data: IExpenses) => {
+    mutationFn: async (data: IExpense) => {
       const res: AxiosResponse<IQueryResponse> =
         await axiosInstance.post<IApiResponse>(endpoints.expense, data);
       return res.data;
@@ -28,7 +28,7 @@ export const useUpdateExpense = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ["expense"],
-    mutationFn: async (data: IExpenses) => {
+    mutationFn: async (data: IExpense) => {
       const res: AxiosResponse<IQueryResponse> =
         await axiosInstance.put<IApiResponse>(
           endpoints.expense + data.id,
@@ -48,6 +48,7 @@ export const useUpdateExpense = () => {
 
 export const useDeleteExpense = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationKey: ["expense"],
     mutationFn: async (id: string) => {
@@ -69,7 +70,7 @@ export const useGetExpenses = () => {
   return useQuery({
     queryKey: ["expense"],
     queryFn: async () => {
-      const res: AxiosResponse<IQueryResponse<IExpenses[]>> =
+      const res: AxiosResponse<IQueryResponse<IExpense[]>> =
         await axiosInstance.get<IApiResponse>(endpoints.expense);
       return res.data?.data || [];
     },

@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-const expenseSchema = new Schema<IExpenses>(
+const expenseSchema = new Schema<IExpense>(
   {
     date: { type: Date, require: true },
     amount: {
@@ -10,6 +10,7 @@ const expenseSchema = new Schema<IExpenses>(
     },
     description: { type: String },
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", require: true },
   },
   {
     timestamps: true,
@@ -17,7 +18,6 @@ const expenseSchema = new Schema<IExpenses>(
       virtuals: true,
       transform: (doc, ret) => {
         ret.id = ret._id;
-        delete ret._id;
       },
     },
     toObject: {
@@ -27,7 +27,6 @@ const expenseSchema = new Schema<IExpenses>(
 );
 
 const Expense =
-  mongoose.models.Expense ||
-  mongoose.model<IExpenses>("Expense", expenseSchema);
+  mongoose.models.Expense || mongoose.model<IExpense>("Expense", expenseSchema);
 
 export default Expense;

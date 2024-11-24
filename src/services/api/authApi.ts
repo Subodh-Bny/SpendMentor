@@ -33,7 +33,7 @@ interface ILoginResponse<T> extends IQueryResponse {
 
 export const useLogin = () => {
   const router = useRouter();
-  const { setIsLoggedIn, setToken, setUser } = useContext(AuthContext);
+  const { setIsLoggedIn, setUser } = useContext(AuthContext);
 
   return useMutation({
     mutationFn: async (data: IUser) => {
@@ -46,13 +46,11 @@ export const useLogin = () => {
         toast.success(data.message);
         router.push(routes.dashboard.home);
         setIsLoggedIn(true);
-        setToken(data.token);
         setUser(data.data);
-        Cookie.set("user", { ...data.data });
+        Cookie.set("user", JSON.stringify({ ...data.data }));
       }
     },
     onError: (error) => {
-      console.log(error);
       requestError(error as AxiosError<IApiResponse, unknown>);
     },
   });
@@ -71,7 +69,6 @@ export const useLogout = () => {
       router.push(routes.auth.login);
     },
     onError: (error) => {
-      console.log(error);
       requestError(error as AxiosError<IApiResponse, unknown>);
     },
   });

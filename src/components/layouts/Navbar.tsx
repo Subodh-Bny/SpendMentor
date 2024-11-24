@@ -88,9 +88,12 @@ const Navbar = () => {
               <div className="ml-4 flex items-center md:ml-6">
                 <Sheet>
                   <SheetTrigger>
-                    <Avatar className="w-9 h-9">
+                    <Avatar className="w-9 h-9 animate-pulse">
                       <AvatarImage
-                        src={"https://avatar.iran.liara.run/username?username="}
+                        src={
+                          "https://avatar.iran.liara.run/username?username=" +
+                          user?.name
+                        }
                         className="w-9 h-9 rounded-full"
                       />
                       <AvatarFallback className="text-sm">USR</AvatarFallback>

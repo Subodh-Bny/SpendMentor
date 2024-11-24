@@ -14,9 +14,7 @@ import { useLogout } from "@/services/api/authApi";
 type AuthContextType = {
   isLoggedIn: boolean;
   user: IUser | undefined;
-  token: string | undefined;
   setUser: Dispatch<SetStateAction<IUser | undefined>>;
-  setToken: Dispatch<SetStateAction<string | undefined>>;
   setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
   logout: () => void;
 };
@@ -24,9 +22,8 @@ type AuthContextType = {
 export const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   user: undefined,
-  token: undefined,
   setUser: () => {},
-  setToken: () => {},
+
   setIsLoggedIn: () => {},
   logout: () => {},
 });
@@ -34,17 +31,14 @@ export const AuthContext = createContext<AuthContextType>({
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<IUser | undefined>(undefined);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [token, setToken] = useState<string | undefined>(undefined);
   const { mutate: logoutMutate } = useLogout();
 
   useEffect(() => {
-    const userToken = Cookies.get("jwt");
-    console.log(userToken);
-    if (userToken) {
-      setIsLoggedIn(true);
-      setToken(userToken);
+    const userData = Cookies.get("user");
 
-      const userData = Cookies.get("user");
+    if (userData) {
+      setIsLoggedIn(true);
+
       if (userData) {
         setUser(JSON.parse(userData));
       }
@@ -55,10 +49,8 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     logoutMutate();
-    Cookies.remove("jwt");
     Cookies.remove("user");
     setIsLoggedIn(false);
-    setToken(undefined);
     setUser(undefined);
   };
 
@@ -69,8 +61,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         isLoggedIn,
         setUser,
         setIsLoggedIn,
-        token,
-        setToken,
         logout,
       }}
     >

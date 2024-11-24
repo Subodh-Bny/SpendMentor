@@ -3,6 +3,8 @@ import { internalError } from "./internalError";
 import dbConnect from "@/lib/dbConnect";
 import Expense from "@/models/expenses.model";
 
+import { validateAuth } from "./validateUser";
+
 export const addExpenses = async (req: Request) => {
   if (req.method !== "POST") {
     return NextResponse.json(
@@ -16,14 +18,25 @@ export const addExpenses = async (req: Request) => {
   try {
     await dbConnect();
 
+    const authResult = await validateAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult; // Unauthorized response
+    }
+
+    const { userId } = authResult;
+
     const { date, description, amount, category } = await req.json();
 
     const newExpense = new Expense({
       date,
       description,
       amount,
+      user: userId,
       category,
     });
+
+    console.log(userId);
+    console.log(newExpense);
 
     await newExpense.save();
 
@@ -49,7 +62,14 @@ export const getExpenses = async (req: Request) => {
   try {
     await dbConnect();
 
-    const expenses = await Expense.find();
+    const authResult = await validateAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult; // Unauthorized response
+    }
+
+    const { userId } = authResult;
+
+    const expenses = await Expense.find({ user: userId }).populate("category");
 
     return NextResponse.json(
       { message: "Expenses fetched successfully", data: expenses },
@@ -75,10 +95,17 @@ export const deleteExpense = async (
 
   try {
     await dbConnect();
-
     const { id } = await params;
+    console.log(id);
 
     const deletedExpense = await Expense.findByIdAndDelete(id);
+
+    if (!deletedExpense) {
+      return NextResponse.json(
+        { message: "Couldn't find the expense" },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json(
       { message: "Expense deleted successfully", data: deletedExpense },

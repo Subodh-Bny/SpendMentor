@@ -4,6 +4,10 @@ type IQueryResponse<T = unknown> = {
   data?: T;
 };
 
+interface RequestWithUser extends NextRequest {
+  user?: JWTVerifyResult<JWTPayload>;
+}
+
 interface IApiResponse {
   success: boolean;
   message: string;
@@ -22,10 +26,11 @@ interface ICategory {
   name: string;
   user?: string;
 }
-interface IExpenses {
+interface IExpense {
   id?: string;
   date: Date;
   amount: string;
+  user?: string | IUser;
   category: string | ICategory;
   description?: string;
 }

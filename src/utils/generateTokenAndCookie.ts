@@ -16,12 +16,11 @@ const generateTokenAndCookie = async (
 
   cookiesStore.set("jwt", token, {
     maxAge: 15 * 24 * 60 * 60,
-    httpOnly: true,
     sameSite: "strict",
+    httpOnly: true,
     secure: process.env.NODE_ENV !== "development",
   });
 
-  console.log(token);
   return token;
 };
 
