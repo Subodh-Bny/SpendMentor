@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { internalError } from "./internalError";
 import dbConnect from "@/lib/dbConnect";
 import Category from "@/models/category.model";
+import { validateAuth } from "./validateUser";
 
 export const createCategory = async (req: Request) => {
   if (req.method !== "POST") {
@@ -16,10 +17,18 @@ export const createCategory = async (req: Request) => {
   try {
     await dbConnect();
 
+    const authResult = await validateAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult; // Unauthorized response
+    }
+
+    const { userId } = authResult;
+
     const { name } = await req.json();
 
     const newCategory = new Category({
       name,
+      user: userId,
     });
 
     await newCategory.save();
@@ -46,7 +55,14 @@ export const getCategories = async (req: Request) => {
   try {
     await dbConnect();
 
-    const categories = await Category.find();
+    const authResult = await validateAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult; // Unauthorized response
+    }
+
+    const { userId } = authResult;
+
+    const categories = await Category.find({ user: userId });
 
     return NextResponse.json(
       { message: "Categories fetched successfully", data: categories },

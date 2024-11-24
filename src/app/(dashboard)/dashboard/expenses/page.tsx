@@ -1,6 +1,6 @@
 "use client";
 
-import AddExpense from "@/components/expenses/add-expense";
+import AddExpense from "@/app/(dashboard)/dashboard/expenses/add-expense";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -50,7 +50,7 @@ export default function ExpenseTable() {
   };
 
   return (
-    <div className="container max-w-6xl mx-auto py-10 px-4">
+    <div>
       <div className="flex w-full justify-between">
         <h2 className="text-2xl font-bold mb-4">Expense Report</h2>
         <Button onClick={() => handleDialog()}>Add expense</Button>
