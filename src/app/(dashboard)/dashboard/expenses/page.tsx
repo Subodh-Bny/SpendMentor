@@ -85,7 +85,7 @@ export default function ExpenseTable() {
                   {typeof expense.category === "object" &&
                     expense.category.name}
                 </TableCell>
-                <TableCell>${parseInt(expense.amount).toFixed(2)}</TableCell>
+                <TableCell>Rs. {parseInt(expense.amount).toFixed(2)}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex gap-2 justify-end">
                     <Button size="icon" onClick={() => handleDialog(expense)}>
@@ -134,7 +134,7 @@ export default function ExpenseTable() {
             <TableRow>
               <TableCell colSpan={4}>Total</TableCell>
               <TableCell className="text-right font-bold">
-                ${total?.toFixed(2) || 0.0}
+                Rs. {total?.toFixed(2) || 0.0}
               </TableCell>
             </TableRow>
           </TableFooter>

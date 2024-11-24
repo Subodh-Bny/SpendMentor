@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const expenseSchema = new Schema<IExpense>(
   {
-    date: { type: Date, require: true },
+    date: { type: Date, required: true },
     amount: {
       type: String,
       require: true,
@@ -10,7 +10,7 @@ const expenseSchema = new Schema<IExpense>(
     },
     description: { type: String },
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", require: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },
   {
     timestamps: true,
@@ -18,6 +18,7 @@ const expenseSchema = new Schema<IExpense>(
       virtuals: true,
       transform: (doc, ret) => {
         ret.id = ret._id;
+        delete ret._id;
       },
     },
     toObject: {

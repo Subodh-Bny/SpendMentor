@@ -34,3 +34,12 @@ interface IExpense {
   category: string | ICategory;
   description?: string;
 }
+
+interface IBudget {
+  id?: string;
+  category: string | ICategory;
+  amount: number;
+  month: string;
+  spent?: number;
+  user: string | IUser;
+}

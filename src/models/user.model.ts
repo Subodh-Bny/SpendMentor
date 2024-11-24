@@ -2,15 +2,15 @@ import mongoose, { Schema } from "mongoose";
 
 const userSchema = new Schema<IUser>(
   {
-    name: { type: String, require: true },
+    name: { type: String, required: true },
     email: {
       type: String,
       unique: true,
-      require: true,
+      required: true,
       trim: true,
       lowercase: true,
     },
-    password: { type: String, require: true, trim: true },
+    password: { type: String, required: true, trim: true },
   },
   {
     timestamps: true,
