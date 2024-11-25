@@ -3,7 +3,7 @@ const routes = {
   dashboard: {
     home: "/dashboard",
     expenses: "/dashboard/expenses",
-    budget: "/dashboard/budget",
+    budget: { overview: "/dashboard/budget/", new: "/dashboard/budget/new" },
     goals: "/dashboard/goals",
     reports: "/dashboard/reports",
     categories: "/dashboard/categories",

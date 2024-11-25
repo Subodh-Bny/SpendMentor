@@ -41,5 +41,5 @@ interface IBudget {
   amount: number;
   month: string;
   spent?: number;
-  user: string | IUser;
+  user?: string | IUser;
 }

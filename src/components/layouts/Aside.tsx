@@ -21,7 +21,7 @@ const links = [
   },
 
   {
-    link: routes.dashboard.budget,
+    link: routes.dashboard.budget.overview,
     name: "Budget",
     icon: Wallet,
   },

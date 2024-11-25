@@ -6,6 +6,7 @@ const endpoints = {
   },
   expense: "/expense/",
   category: "/category/",
+  budget: "/budget/",
 };
 
 export default endpoints;

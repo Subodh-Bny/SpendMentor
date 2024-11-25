@@ -10,6 +10,7 @@ const budgetSchema = new Schema<IBudget>(
     amount: { type: Number, required: true },
     month: { type: String, required: true },
     spent: { type: Number, default: 0 },
+    user: { type: mongoose.Types.ObjectId, ref: "User", required: true },
   },
   {
     timestamps: true,

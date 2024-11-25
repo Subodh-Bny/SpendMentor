@@ -1,7 +1,8 @@
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import React from "react";
-import BudgetList from "./budget-list";
+import BudgetList from "../../../../components/budget/budget-list";
+import routes from "@/config/routes";
 
 const BudgetPage = () => {
   return (
@@ -9,7 +10,7 @@ const BudgetPage = () => {
       <section>
         <h1 className="text-3xl font-bold mb-3">Budget Overview</h1>
         <Link
-          href={"/"}
+          href={routes.dashboard.budget.new}
           className={`${buttonVariants({ variant: "default" })} text-white`}
         >
           Add Budget
