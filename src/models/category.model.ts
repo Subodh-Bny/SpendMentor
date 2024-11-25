@@ -20,6 +20,8 @@ const categorySchema = new Schema<ICategory>(
   }
 );
 
+categorySchema.index({ name: 1, user: 1 }, { unique: true });
+
 const Category =
   mongoose.models.Category ||
   mongoose.model<ICategory>("Category", categorySchema);

@@ -27,6 +27,8 @@ const budgetSchema = new Schema<IBudget>(
   }
 );
 
+budgetSchema.index({ user: 1, month: 1 });
+
 const Budget =
   mongoose.models.Budget || mongoose.model<IBudget>("Budget", budgetSchema);
 

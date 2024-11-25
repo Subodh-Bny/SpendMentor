@@ -11,7 +11,7 @@ export const setBudget = async (req: Request) => {
       {
         message: "Method not allowed",
       },
-      { status: 404 }
+      { status: 405 }
     );
   }
 
@@ -62,7 +62,7 @@ export const getBudgets = async (req: Request) => {
       {
         message: "Method not allowed",
       },
-      { status: 404 }
+      { status: 405 }
     );
   }
 
@@ -96,7 +96,7 @@ export const deleteBudget = async (
       {
         message: "Method not allowed",
       },
-      { status: 404 }
+      { status: 405 }
     );
   }
 
@@ -125,7 +125,7 @@ export const getBudgetById = async (
       {
         message: "Method not allowed",
       },
-      { status: 404 }
+      { status: 405 }
     );
   }
 
@@ -154,7 +154,7 @@ export const updateBudget = async (
       {
         message: "Method not allowed",
       },
-      { status: 404 }
+      { status: 405 }
     );
   }
 

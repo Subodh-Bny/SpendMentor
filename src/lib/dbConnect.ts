@@ -1,4 +1,8 @@
 import mongoose from "mongoose";
+import "@/models/budget.model";
+import "@/models/category.model";
+import "@/models/user.model";
+import "@/models/expenses.model";
 
 const MONGODB_URI = process.env.DATABASE_URL as string;
 
