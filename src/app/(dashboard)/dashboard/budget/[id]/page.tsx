@@ -4,8 +4,13 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { BudgetForm } from "@/components/budget/budget-form";
 import BudgetProgress from "@/components/budget/budget-progress";
-import { useGetBudgetById } from "@/services/api/budgetApi";
+import {
+  useDeleteBudget,
+  useGetBudgetById,
+  useUpdateBudget,
+} from "@/services/api/budgetApi";
 import LoadingPopup from "@/components/loading-popup";
+import routes from "@/config/routes";
 
 export default function BudgetDetailPage({
   params,
@@ -23,28 +28,28 @@ export default function BudgetDetailPage({
   } = useGetBudgetById({
     id: budgetId,
   });
-
-  //   useEffect(() => {
-  //     // In a real app, you'd fetch this data from your API
-  //     setBudget({
-  //       id: budgetId,
-  //       category: "Food",
-  //       amount: 500,
-  //       month: "2023-11",
-  //       spent: 300,
-  //     });
-  //   }, [budgetId]);
+  const { mutate: budgetUpdate, isPending: budgetUpdatePending } =
+    useUpdateBudget();
+  const { mutate: deleteBudget, isPending: budgetDeletePending } =
+    useDeleteBudget();
 
   const handleSubmit = (updatedBudget: Omit<IBudget, "id" | "spent">) => {
-    // In a real app, you'd send this data to your API
-    console.log("Updating budget:", { ...updatedBudget, id: budgetId });
-    router.push("/budget");
+    budgetUpdate(
+      { ...updatedBudget, id: budget?.id },
+      {
+        onSuccess: () => {
+          router.push(routes.dashboard.budget.overview);
+        },
+      }
+    );
   };
 
   const handleDelete = () => {
-    // In a real app, you'd send a delete request to your API
-    console.log("Deleting budget:", budgetId);
-    router.push("/budget");
+    deleteBudget(budget?.id || "", {
+      onSuccess: () => {
+        router.push(routes.dashboard.budget.overview);
+      },
+    });
   };
 
   if (budgetError) {
@@ -57,9 +62,11 @@ export default function BudgetDetailPage({
 
   return (
     <>
-      {budgetPending ? (
+      {budgetPending || budgetUpdatePending || budgetDeletePending ? (
         <LoadingPopup
-          isLoading={budgetPending}
+          isLoading={
+            budgetPending || budgetUpdatePending || budgetDeletePending
+          }
           message="Fetching budget details ..."
         />
       ) : (

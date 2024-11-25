@@ -4,6 +4,7 @@ import dbConnect from "@/lib/dbConnect";
 import mongoose from "mongoose";
 import { validateAuth } from "./validateUser";
 import Budget from "@/models/budget.model";
+import Expense from "@/models/expenses.model";
 
 export const setBudget = async (req: Request) => {
   if (req.method !== "POST") {
@@ -38,11 +39,30 @@ export const setBudget = async (req: Request) => {
       );
     }
 
+    const startOfMonth = new Date(`${month}-01`);
+    const endOfMonth = new Date(
+      new Date(startOfMonth).setMonth(startOfMonth.getMonth() + 1)
+    );
+
+    const expensesInCurrentMonth = await Expense.find({
+      category,
+      user: userId,
+      date: { $gte: startOfMonth, $lt: endOfMonth },
+    });
+
+    const currentMonthExpenses = expensesInCurrentMonth.reduce(
+      (acc, expense) => {
+        return acc + parseFloat(expense.amount || "0");
+      },
+      0
+    );
+
     const newBudget = new Budget({
       category,
       month,
       amount,
       user: userId,
+      spent: currentMonthExpenses,
     });
 
     await newBudget.save();
@@ -172,14 +192,39 @@ export const updateBudget = async (
 
     const { id } = await params;
 
-    const updatedBudget = await Budget.findByIdAndUpdate(
-      id,
-      { amount, month, category },
-      { new: true }
+    const budget = await Budget.findById(id);
+
+    if (!budget) {
+      return NextResponse.json(
+        { message: "Budget not found" },
+        { status: 404 }
+      );
+    }
+
+    const startOfNewMonth = new Date(`${month}-01`);
+    const endOfNewMonth = new Date(
+      new Date(startOfNewMonth).setMonth(startOfNewMonth.getMonth() + 1)
     );
 
+    const expensesInNewMonth = await Expense.find({
+      category,
+      user: budget.user,
+      date: { $gte: startOfNewMonth, $lt: endOfNewMonth },
+    });
+
+    const spentInNewMonth = expensesInNewMonth.reduce(
+      (acc, expense) => acc + parseFloat(expense.amount || "0"),
+      0
+    );
+
+    budget.spent = spentInNewMonth;
+    budget.amount = amount;
+    budget.month = month;
+
+    await budget.save();
+
     return NextResponse.json(
-      { message: "Budget updated successfully", data: updatedBudget },
+      { message: "Budget updated successfully", data: budget },
       { status: 200 }
     );
   } catch (error) {

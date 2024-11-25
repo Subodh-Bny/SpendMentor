@@ -108,7 +108,12 @@ export function BudgetForm({ budget, onSubmit, onDelete }: BudgetFormProps) {
                 <Input
                   type="number"
                   {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  value={field.value || ""}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === "" ? "" : parseFloat(e.target.value);
+                    field.onChange(value);
+                  }}
                 />
               </FormControl>
               <FormMessage />
