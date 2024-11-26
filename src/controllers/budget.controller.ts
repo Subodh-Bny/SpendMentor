@@ -39,30 +39,11 @@ export const setBudget = async (req: Request) => {
       );
     }
 
-    const startOfMonth = new Date(`${month}-01`);
-    const endOfMonth = new Date(
-      new Date(startOfMonth).setMonth(startOfMonth.getMonth() + 1)
-    );
-
-    const expensesInCurrentMonth = await Expense.find({
-      category,
-      user: userId,
-      date: { $gte: startOfMonth, $lt: endOfMonth },
-    });
-
-    const currentMonthExpenses = expensesInCurrentMonth.reduce(
-      (acc, expense) => {
-        return acc + parseFloat(expense.amount || "0");
-      },
-      0
-    );
-
     const newBudget = new Budget({
       category,
       month,
       amount,
       user: userId,
-      spent: currentMonthExpenses,
     });
 
     await newBudget.save();
@@ -98,8 +79,56 @@ export const getBudgets = async (req: Request) => {
 
     const budgets = await Budget.find({ user: userId }).populate("category");
 
+    if (!budgets) {
+      return NextResponse.json(
+        { message: "No budgets found" },
+        { status: 404 }
+      );
+    }
+
+    const budgetsWithSpent = await Promise.all(
+      budgets.map(async (budget) => {
+        const startDate = new Date(`${budget.month}-01`);
+        const endDate = new Date(startDate);
+        endDate.setMonth(startDate.getMonth() + 1);
+        endDate.setDate(0);
+
+        if (!mongoose.Types.ObjectId.isValid(budget?.category?._id)) {
+          return NextResponse.json({ message: "Invalid category" });
+        }
+
+        const category: string = budget?.category?._id || "";
+
+        const spentAggregation = await Expense.aggregate([
+          {
+            $match: {
+              user: new mongoose.Types.ObjectId(userId),
+              category: new mongoose.Types.ObjectId(category),
+              date: { $gte: startDate, $lte: endDate },
+            },
+          },
+          {
+            $addFields: {
+              amountNumber: { $toDouble: "$amount" },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              totalSpent: { $sum: "$amountNumber" },
+            },
+          },
+        ]);
+
+        console.log("Spent Aggregation Result:", spentAggregation);
+
+        const totalSpent = spentAggregation[0]?.totalSpent || 0;
+        return { ...budget.toObject(), spent: totalSpent };
+      })
+    );
+
     return NextResponse.json(
-      { message: "Budget fetched successfully", data: budgets },
+      { message: "Budget fetched successfullys", data: budgetsWithSpent },
       { status: 200 }
     );
   } catch (error) {
@@ -136,6 +165,43 @@ export const deleteBudget = async (
   }
 };
 
+async function getSingleBudgetSpent(userId: string, budget: IBudget) {
+  const startDate = new Date(`${budget.month}-01`);
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 1);
+  endDate.setDate(0);
+
+  const category: string =
+    (typeof budget?.category === "object" ? budget?.category?.id : "") || "";
+
+  console.log(category);
+  console.log(userId);
+  const spentAggregation = await Expense.aggregate([
+    {
+      $match: {
+        user: new mongoose.Types.ObjectId(userId),
+        category: new mongoose.Types.ObjectId(category),
+        date: { $gte: startDate, $lte: endDate },
+      },
+    },
+    {
+      $addFields: {
+        amountNumber: { $toDouble: "$amount" }, // Convert `amount` to number
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalSpent: { $sum: "$amountNumber" },
+      },
+    },
+  ]);
+
+  const spent =
+    spentAggregation.length > 0 ? spentAggregation[0].totalSpent : 0;
+  return spent;
+}
+
 export const getBudgetById = async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -156,8 +222,20 @@ export const getBudgetById = async (
 
     const budget = await Budget.findById(id).populate("category");
 
+    if (!budget) {
+      return NextResponse.json(
+        { message: "Budget not found" },
+        { status: 404 }
+      );
+    }
+
+    const totalSpent = await getSingleBudgetSpent(budget.user, budget);
+
     return NextResponse.json(
-      { message: "Budget fetched successfully", data: budget },
+      {
+        message: "Budget fetched successfully",
+        data: { ...budget.toObject(), spent: totalSpent },
+      },
       { status: 202 }
     );
   } catch (error) {
@@ -192,7 +270,11 @@ export const updateBudget = async (
 
     const { id } = await params;
 
-    const budget = await Budget.findById(id);
+    const budget = await Budget.findByIdAndUpdate(id, {
+      amount,
+      month,
+      category,
+    });
 
     if (!budget) {
       return NextResponse.json(
@@ -200,28 +282,6 @@ export const updateBudget = async (
         { status: 404 }
       );
     }
-
-    const startOfNewMonth = new Date(`${month}-01`);
-    const endOfNewMonth = new Date(
-      new Date(startOfNewMonth).setMonth(startOfNewMonth.getMonth() + 1)
-    );
-
-    const expensesInNewMonth = await Expense.find({
-      category,
-      user: budget.user,
-      date: { $gte: startOfNewMonth, $lt: endOfNewMonth },
-    });
-
-    const spentInNewMonth = expensesInNewMonth.reduce(
-      (acc, expense) => acc + parseFloat(expense.amount || "0"),
-      0
-    );
-
-    budget.spent = spentInNewMonth;
-    budget.amount = amount;
-    budget.month = month;
-
-    await budget.save();
 
     return NextResponse.json(
       { message: "Budget updated successfully", data: budget },

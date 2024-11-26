@@ -4,7 +4,6 @@ import dbConnect from "@/lib/dbConnect";
 import Expense from "@/models/expenses.model";
 
 import { validateAuth } from "./validateUser";
-import Budget from "@/models/budget.model";
 
 export const addExpenses = async (req: Request) => {
   if (req.method !== "POST") {
@@ -35,18 +34,6 @@ export const addExpenses = async (req: Request) => {
       user: userId,
       category,
     });
-
-    const expenseMonth = new Date(date).toISOString().slice(0, 7);
-    const budget = await Budget.findOne({
-      category,
-      user: userId,
-      month: expenseMonth,
-    });
-
-    if (budget) {
-      budget.spent = (budget.spent || 0) + parseFloat(newExpense.amount);
-      await budget.save();
-    }
 
     await newExpense.save();
 
@@ -122,21 +109,6 @@ export const deleteExpense = async (
       );
     }
 
-    const expenseMonth = new Date(expense.date).toISOString().slice(0, 7);
-    const budget = await Budget.findOne({
-      category: expense.category,
-      user: expense.user,
-      month: expenseMonth,
-    });
-
-    if (budget) {
-      budget.spent = Math.max(
-        0,
-        (budget.spent || 0) - parseFloat(expense.amount)
-      );
-      await budget.save();
-    }
-
     await expense.deleteOne();
 
     return NextResponse.json(
@@ -167,23 +139,10 @@ export const updateExpense = async (
       return authResult;
     }
 
-    const { userId } = authResult;
-
     await dbConnect();
 
     const { date, description, amount, category } = await req.json();
     const { id } = await params;
-
-    const previousExpense = await Expense.findById(id);
-
-    if (!previousExpense) {
-      return NextResponse.json(
-        {
-          message: "Couldnot find the Expense",
-        },
-        { status: 404 }
-      );
-    }
 
     const updatedExpense = await Expense.findByIdAndUpdate(id, {
       date,
@@ -192,23 +151,11 @@ export const updateExpense = async (
       category,
     });
 
-    const expenseMonth = new Date(date).toISOString().slice(0, 7);
-
-    const budget = await Budget.findOne({
-      category,
-      user: userId,
-      month: expenseMonth,
-    });
-
-    if (budget) {
-      const previousAmount = parseFloat(previousExpense?.amount || "0");
-      const updatedAmount = parseFloat(updatedExpense?.amount || "0");
-
-      budget.spent = Math.max(
-        0,
-        (budget.spent || 0) - previousAmount + updatedAmount
+    if (!updatedExpense) {
+      return NextResponse.json(
+        { message: "Couldn't find budget" },
+        { status: 404 }
       );
-      await budget.save();
     }
 
     return NextResponse.json(
