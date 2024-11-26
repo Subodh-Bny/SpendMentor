@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import routes from "@/config/routes";
-import Aside from "./Aside";
+import Aside from "./aside";
 
 const Navbar = () => {
   const { setTheme } = useTheme();

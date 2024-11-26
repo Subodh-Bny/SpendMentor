@@ -7,13 +7,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { CreditCard, Wallet, Goal, FileChartLine, Blocks } from "lucide-react";
+import {
+  CreditCard,
+  Wallet,
+  Goal,
+  FileChartLine,
+  Blocks,
+  LayoutDashboard,
+} from "lucide-react";
 import { AuthContext } from "@/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import routes from "@/config/routes";
 import Link from "next/link";
 
 const links = [
+  {
+    link: routes.dashboard.home,
+    name: "Dashboard",
+    icon: LayoutDashboard,
+  },
   {
     link: routes.dashboard.expenses,
     name: "Expenses",
