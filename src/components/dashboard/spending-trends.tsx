@@ -11,12 +11,14 @@ import {
   Legend,
   CategoryScale,
 } from "chart.js";
-import {
-  getMonthlyExpenses,
-  getCategoryTotal,
-  financialData,
-} from "@/lib/data";
+
 import { Card } from "../ui/card";
+import { useGetAnalytics } from "@/services/api/analyticsApi";
+import {
+  useGetCategories,
+  useGetCategoryTotal,
+  useGetMonthlyExpenses,
+} from "@/hooks/use-analytics";
 
 ChartJS.register(
   LineElement,
@@ -28,25 +30,32 @@ ChartJS.register(
   CategoryScale
 );
 
-const prepareSpendData = (month: number, year: number) => {
+const usePrepareSpendData = (month: number, year: number) => {
   // Get the expenses for a given month and year
-  const expenses = getMonthlyExpenses(month, year);
+  const expenses: IExpense[] = useGetMonthlyExpenses(month, year);
+
+  // Get all categories
+  const allCategories: ICategory[] = useGetCategories();
 
   // Aggregate expenses by category
-  const categoryTotals = getCategoryTotal(expenses);
+  const categoryTotals = useGetCategoryTotal(expenses);
 
-  // Prepare the labels (categories) and the corresponding data (amounts)
-  const categories = Object.keys(financialData.budget.categories);
-  const amounts = categories.map((category) => categoryTotals[category] || 0);
+  // Prepare the labels (category names) and the corresponding data (amounts)
+  const categories: string[] = allCategories.map((category) => category.name);
+  const amounts: number[] = categories.map(
+    (categoryName) => categoryTotals[categoryName] || 0
+  );
 
   return { categories, amounts };
 };
 
 const SpendTrendAnalysisChart = () => {
-  const month = 3; // March (0 = January, 1 = February, etc.)
-  const year = 2023;
+  const month = 11; // March (0 = January, 1 = February, etc.)
+  const year = 2024;
+  const { data } = useGetAnalytics();
+  console.log(data);
 
-  const { categories, amounts } = prepareSpendData(month, year);
+  const { categories, amounts } = usePrepareSpendData(month, year);
 
   const lineData = {
     labels: categories, // Categories as labels

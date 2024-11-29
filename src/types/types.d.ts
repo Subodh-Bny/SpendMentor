@@ -43,3 +43,9 @@ interface IBudget {
   spent?: number;
   user?: string | IUser;
 }
+
+interface IAnalytics {
+  expenses: IExpense[];
+  budgets: IBudget[];
+  categories: ICategory[];
+}

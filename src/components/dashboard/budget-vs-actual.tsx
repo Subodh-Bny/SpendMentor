@@ -9,20 +9,21 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-  getMonthlyExpenses,
-  getTotalExpenses,
-  financialData,
-} from "@/lib/data";
+  useGetMonthlyBudget,
+  useGetMonthlyExpenses,
+  useGetTotalExpenses,
+} from "@/hooks/use-analytics";
+
 import { cn } from "@/lib/utils";
 
 export default function BudgetVsActual() {
   const currentDate = new Date();
-  const currentMonth = currentDate.getMonth();
+  const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
 
-  const monthlyExpenses = getMonthlyExpenses(currentMonth, currentYear);
-  const totalMonthly = getTotalExpenses(monthlyExpenses);
-  const monthlyBudget = financialData.budget.monthly;
+  const monthlyExpenses = useGetMonthlyExpenses(currentMonth, currentYear);
+  const totalMonthly = useGetTotalExpenses(monthlyExpenses);
+  const monthlyBudget = useGetMonthlyBudget(currentMonth);
 
   const percentageSpent = (totalMonthly / monthlyBudget) * 100;
 

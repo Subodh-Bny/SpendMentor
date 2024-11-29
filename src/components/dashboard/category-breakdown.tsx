@@ -2,25 +2,21 @@
 import React from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { financialData } from "@/lib/data";
 import { Card } from "../ui/card";
 import { useTheme } from "next-themes";
+import {
+  useGetCategoryTotal,
+  useGetTotalExpenses,
+} from "@/hooks/use-analytics";
+import { useGetExpenses } from "@/services/api/expenseApi";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Aggregate expenses by category
-const aggregateExpenses = () => {
-  const categoryMap: { [key: string]: number } = {};
+const useAggregateExpenses = (expenses: IExpense[]) => {
+  const categoryTotals = useGetCategoryTotal(expenses || []);
 
-  financialData.expenses.forEach((expense) => {
-    if (categoryMap[expense.category]) {
-      categoryMap[expense.category] += expense.amount;
-    } else {
-      categoryMap[expense.category] = expense.amount;
-    }
-  });
-
-  return Object.entries(categoryMap).map(([category, amount]) => ({
+  return Object.entries(categoryTotals).map(([category, amount]) => ({
     category,
     amount,
   }));
@@ -45,7 +41,10 @@ const colors = [
 ];
 
 const CategoryBreakdown = () => {
-  const aggregatedData = aggregateExpenses();
+  const { data: expenses } = useGetExpenses();
+
+  const aggregatedData = useAggregateExpenses(expenses || []);
+  const expensesTotal = useGetTotalExpenses(expenses || []);
 
   const { theme } = useTheme();
 
@@ -85,7 +84,7 @@ const CategoryBreakdown = () => {
     <Card className="grid p-9 md:grid-cols-2 items-center gap-11 ">
       <div>
         <h1 className="text-2xl font-bold">Total Expenses:</h1>
-        <p className="font-bold text-6xl mt-4">Rs. 200000</p>
+        <p className="font-bold text-6xl mt-4">Rs. {expensesTotal}</p>
       </div>
       <div className="grid lg:grid-cols-2 items-center gap-11">
         <div className="flex-grow max-w-sm ">
