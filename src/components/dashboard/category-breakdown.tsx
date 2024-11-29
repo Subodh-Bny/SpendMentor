@@ -4,6 +4,7 @@ import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { financialData } from "@/lib/data";
 import { Card } from "../ui/card";
+import { useTheme } from "next-themes";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -46,13 +47,15 @@ const colors = [
 const CategoryBreakdown = () => {
   const aggregatedData = aggregateExpenses();
 
+  const { theme } = useTheme();
+
   const pieData = {
     labels: aggregatedData.map((expense) => expense.category),
     datasets: [
       {
         data: aggregatedData.map((expense) => expense.amount),
         backgroundColor: colors,
-        borderColor: "#ffffff",
+        borderColor: theme === "light" ? "#ffffff" : "#00000",
         borderWidth: 1,
       },
     ],

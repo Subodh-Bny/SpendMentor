@@ -2,6 +2,7 @@ import BudgetVsActual from "@/components/dashboard/budget-vs-actual";
 import CategoryBreakdown from "@/components/dashboard/category-breakdown";
 import ExpenseOverview from "@/components/dashboard/expense-overview";
 import SavingsGoal from "@/components/dashboard/savings-goal";
+import SpendingTrends from "@/components/dashboard/spending-trends";
 import React from "react";
 
 const DashboardPage = () => {
@@ -13,8 +14,11 @@ const DashboardPage = () => {
         <BudgetVsActual />
         <SavingsGoal />
       </section>
-      <section className="">
+      <section>
         <CategoryBreakdown />
+      </section>
+      <section>
+        <SpendingTrends />
       </section>
     </div>
   );
