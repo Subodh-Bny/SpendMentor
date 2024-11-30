@@ -13,12 +13,12 @@ import {
 } from "chart.js";
 
 import { Card } from "../ui/card";
-import { useGetAnalytics } from "@/services/api/analyticsApi";
 import {
   useGetCategories,
   useGetCategoryTotal,
   useGetMonthlyExpenses,
 } from "@/hooks/use-analytics";
+import { useTheme } from "next-themes";
 
 ChartJS.register(
   LineElement,
@@ -50,11 +50,10 @@ const usePrepareSpendData = (month: number, year: number) => {
 };
 
 const SpendTrendAnalysisChart = () => {
-  const month = 11; // March (0 = January, 1 = February, etc.)
-  const year = 2024;
-  const { data } = useGetAnalytics();
-  console.log(data);
+  const month = new Date().getMonth(); // March (0 = January, 1 = February, etc.)
+  const year = new Date().getFullYear();
 
+  const { theme } = useTheme();
   const { categories, amounts } = usePrepareSpendData(month, year);
 
   const lineData = {
@@ -82,7 +81,7 @@ const SpendTrendAnalysisChart = () => {
         display: false,
         position: "top" as const, // Legend at the top
         labels: {
-          color: "#333",
+          color: theme === "light" ? "#333" : "white",
         },
       },
       tooltip: {
@@ -96,20 +95,20 @@ const SpendTrendAnalysisChart = () => {
         title: {
           display: true,
           text: "Category",
-          color: "#666",
+          color: theme === "light" ? "#666" : "white",
         },
         ticks: {
-          color: "#333",
+          color: theme === "light" ? "#333" : "white",
         },
       },
       y: {
         title: {
           display: true,
           text: "Amount (NRS)",
-          color: "#666",
+          color: theme === "light" ? "#666" : "white",
         },
         ticks: {
-          color: "#333",
+          color: theme === "light" ? "#333" : "white",
           callback: (value: string | number) => {
             return `Rs.${typeof value === "number" ? value.toFixed(2) : value}`;
           },

@@ -1,7 +1,7 @@
 import { useGetAnalytics } from "@/services/api/analyticsApi";
 
 export const useGetMonthlyExpenses = (
-  month: number,
+  month: number, // Pass zero-indexed month
   year: number
 ): IExpense[] => {
   const { data: financialData, isLoading, error } = useGetAnalytics();
@@ -10,9 +10,8 @@ export const useGetMonthlyExpenses = (
 
   return financialData.expenses.filter((expense) => {
     const expenseDate = new Date(expense.date);
-    console.log(expenseDate.getFullYear());
     return (
-      expenseDate.getMonth() + 1 === month && expenseDate.getFullYear() === year
+      expenseDate.getMonth() === month && expenseDate.getFullYear() === year
     );
   });
 };
@@ -62,7 +61,7 @@ export const useGetMonthlyBudget = (month: number): number => {
   if (isLoading || error || !financialData) return 0;
 
   return financialData.budgets.reduce((acc, budget) => {
-    const budgetMonth = new Date(budget.month).getMonth() + 1;
+    const budgetMonth = new Date(budget.month).getMonth();
     return budgetMonth === month ? acc + budget.amount : acc + 0;
   }, 0);
 };

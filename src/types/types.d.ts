@@ -49,3 +49,12 @@ interface IAnalytics {
   budgets: IBudget[];
   categories: ICategory[];
 }
+
+interface ISavingsGoal {
+  id?: string;
+  targetAmount: string;
+  currentAmount: string;
+  targetDate: Date;
+  updateAmount?: string;
+  user?: string | IUser;
+}

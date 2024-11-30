@@ -1,15 +1,13 @@
 import mongoose, { Schema } from "mongoose";
 
-const expenseSchema = new Schema<IExpense>(
+const savingsGoalSchema = new Schema<ISavingsGoal>(
   {
-    date: { type: Date, required: true },
-    amount: {
-      type: String,
+    targetAmount: { type: String, required: true },
+    targetDate: {
+      type: Date,
       required: true,
-      trim: true,
     },
-    description: { type: String },
-    category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+    currentAmount: { type: String, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },
   {
@@ -27,7 +25,8 @@ const expenseSchema = new Schema<IExpense>(
   }
 );
 
-const Expense =
-  mongoose.models.Expense || mongoose.model<IExpense>("Expense", expenseSchema);
+const SavingsGoal =
+  mongoose.models.SavingsGoal ||
+  mongoose.model<ISavingsGoal>("SavingsGoal", savingsGoalSchema);
 
-export default Expense;
+export default SavingsGoal;

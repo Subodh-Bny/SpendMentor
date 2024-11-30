@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 
 export default function BudgetVsActual() {
   const currentDate = new Date();
-  const currentMonth = currentDate.getMonth() + 1;
+  const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
 
   const monthlyExpenses = useGetMonthlyExpenses(currentMonth, currentYear);
@@ -35,7 +35,7 @@ export default function BudgetVsActual() {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">
-          ${totalMonthly.toFixed(2)} / ${monthlyBudget}
+          Rs. {totalMonthly.toFixed(2)} / Rs. {monthlyBudget}
         </div>
         <Progress
           value={percentageSpent}

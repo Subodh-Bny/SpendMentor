@@ -11,6 +11,7 @@
   "dependencies": {
     "@coreui/react-chartjs": "^3.0.0",
     "@hookform/resolvers": "^3.9.1",
+    "@mui/x-date-pickers": "^7.23.0",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
@@ -30,6 +31,7 @@
     "chart.js": "^4.4.6",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "cmdk": "1.0.0",
     "date-fns": "^4.1.0",
     "dialog": "^0.3.1",
     "form": "^0.2.5",
