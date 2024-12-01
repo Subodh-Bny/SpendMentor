@@ -33,7 +33,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   };
 
-  if (url.pathname.startsWith("/dashboard/") && !token) {
+  if (url.pathname.startsWith("/dashboard") && !token) {
     return handleUnauthorized("Unauthorized - No Token Provided");
   }
 
@@ -56,19 +56,22 @@ export async function middleware(req: NextRequest) {
       const decoded = (await jwtVerify(token, secret)) as {
         payload: CustomJWTPayload;
       };
-      const { userId, role, exp } = decoded.payload;
-
+      const { userId, exp } = decoded.payload;
       if (exp && Date.now() >= exp * 1000) {
-        return handleUnauthorized("Unauthorized - Token Expired");
+        const response = NextResponse.redirect(new URL("/auth/login", req.url));
+
+        response.cookies.delete("jwt");
+
+        return response;
       }
 
       const response = NextResponse.next();
       response.headers.set("X-User-Id", userId);
-      response.headers.set("X-User-Role", role);
       return response;
     } catch (error) {
       console.error("Token verification error:", error);
-      return handleUnauthorized("Unauthorized - Invalid Token");
+      const response = NextResponse.redirect(new URL("/auth/login", req.url));
+      return response;
     }
   }
 

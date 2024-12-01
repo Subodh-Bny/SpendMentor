@@ -9,6 +9,7 @@ const endpoints = {
   budget: "/budget/",
   analytics: "/analytics/",
   savingsGoal: "/savings-goal/",
+  reports: "/report/",
 };
 
 export default endpoints;

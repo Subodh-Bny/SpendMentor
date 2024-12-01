@@ -11,7 +11,6 @@ import {
   CreditCard,
   Wallet,
   Goal,
-  FileChartLine,
   Blocks,
   LayoutDashboard,
 } from "lucide-react";
@@ -44,11 +43,6 @@ const links = [
     icon: Goal,
   },
 
-  {
-    link: routes.dashboard.reports,
-    name: "Reports",
-    icon: FileChartLine,
-  },
   {
     link: routes.dashboard.categories,
     name: "Categories",

@@ -5,7 +5,6 @@ const routes = {
     expenses: "/dashboard/expenses",
     budget: { overview: "/dashboard/budget/", new: "/dashboard/budget/new" },
     goals: "/dashboard/goals",
-    reports: "/dashboard/reports",
     categories: "/dashboard/categories",
   },
 };
