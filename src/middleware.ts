@@ -4,70 +4,77 @@ import { JWTPayload, jwtVerify } from "jose";
 
 interface CustomJWTPayload extends JWTPayload {
   userId: string;
+  role: string;
+  exp?: number;
 }
 
 export async function middleware(req: NextRequest) {
-  const token = req.cookies.get("jwt")?.value; // Retrieve JWT from cookies
-  const url = req.nextUrl;
+  const token = req.cookies.get("jwt")?.value;
+  const url = req.nextUrl.clone();
 
-  // Redirect users without a token trying to access /dashboard/:path*
-  if (url.pathname.startsWith("/dashboard/") && !token) {
+  if (url.pathname === "/" && token) {
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
+  }
+
+  if (url.pathname === "/" && !token) {
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
   }
+
+  const handleUnauthorized = (message: string) => {
+    if (url.pathname.startsWith("/dashboard")) {
+      url.pathname = "/auth/login";
+      return NextResponse.redirect(url);
+    }
+    if (url.pathname.startsWith("/api/")) {
+      return NextResponse.json({ message }, { status: 401 });
+    }
+    return NextResponse.next();
+  };
+
+  if (url.pathname.startsWith("/dashboard/") && !token) {
+    return handleUnauthorized("Unauthorized - No Token Provided");
+  }
+
   if (url.pathname.startsWith("/auth/") && token) {
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 
-  // Protect API routes other than /api/auth/*
   if (
     url.pathname.startsWith("/api/") &&
     !url.pathname.startsWith("/api/auth/") &&
     !token
   ) {
-    return NextResponse.json(
-      { message: "Unauthorized - No Token Provided" },
-      { status: 401 }
-    );
+    return handleUnauthorized("Unauthorized - No Token Provided");
   }
 
-  // Validate token if it exists
   if (token) {
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET);
       const decoded = (await jwtVerify(token, secret)) as {
         payload: CustomJWTPayload;
       };
-      const userId = decoded.payload.userId;
+      const { userId, role, exp } = decoded.payload;
 
-      // Pass user ID to subsequent middleware or handler via headers
+      if (exp && Date.now() >= exp * 1000) {
+        return handleUnauthorized("Unauthorized - Token Expired");
+      }
+
       const response = NextResponse.next();
       response.headers.set("X-User-Id", userId);
+      response.headers.set("X-User-Role", role);
       return response;
     } catch (error) {
       console.error("Token verification error:", error);
-
-      // Redirect invalid token requests for /dashboard/:path*
-      if (url.pathname.startsWith("/dashboard")) {
-        url.pathname = "/auth/login";
-        return NextResponse.redirect(url);
-      }
-
-      // Respond with 401 for invalid tokens on /api/:path*
-      if (url.pathname.startsWith("/api/")) {
-        return NextResponse.json(
-          { message: "Unauthorized - Invalid Token" },
-          { status: 401 }
-        );
-      }
+      return handleUnauthorized("Unauthorized - Invalid Token");
     }
   }
 
   return NextResponse.next();
 }
 
-// Specify route matcher
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/:path*", "/auth/:path*"], // Protects dashboard and API routes
+  matcher: ["/dashboard/:path*", "/api/:path*", "/auth/:path*", "/"],
 };

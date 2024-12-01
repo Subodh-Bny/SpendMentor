@@ -11,29 +11,9 @@ import {
 
 import { Progress } from "@/components/ui/progress";
 import { useGetSavingsGoal } from "@/services/api/savingsGoalApi";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { useState } from "react";
 
-const months = [
-  { value: "0", label: "January" },
-  { value: "1", label: "February" },
-  { value: "2", label: "March" },
-  { value: "3", label: "April" },
-  { value: "4", label: "May" },
-  { value: "5", label: "June" },
-  { value: "6", label: "July" },
-  { value: "7", label: "August" },
-  { value: "8", label: "September" },
-  { value: "9", label: "October" },
-  { value: "10", label: "November" },
-  { value: "11", label: "December" },
-];
+import { useState } from "react";
+import MonthSelector from "../month-selector";
 
 const useGetCurrentMonthTarget = (
   month: number
@@ -71,22 +51,8 @@ export default function SavingsGoal() {
     <Card>
       <CardHeader>
         <CardTitle className="grid grid-cols-2 items-center">
-          Savings Goal{" "}
-          <Select
-            defaultValue={new Date().getMonth().toString()}
-            onValueChange={(value) => setMonth(Number(value))}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select Month" />
-            </SelectTrigger>
-            <SelectContent className="h-56">
-              {months.map((month) => (
-                <SelectItem key={month.value} value={month.value}>
-                  {month.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          Savings Goal
+          <MonthSelector setMonth={setMonth} />
         </CardTitle>
         <CardDescription>Progress towards your target</CardDescription>
       </CardHeader>

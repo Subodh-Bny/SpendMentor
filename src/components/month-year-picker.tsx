@@ -11,27 +11,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { months } from "@/lib/data";
 
 interface MonthYearPickerProps {
   value?: Date;
   onChange?: (date: Date) => void;
   isDateDisabled?: (date: Date) => boolean;
 }
-
-const months = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
 
 export function MonthYearPicker({
   value,
@@ -117,13 +103,13 @@ export function MonthYearPicker({
           <div className="grid grid-cols-3 gap-2">
             {months.map((month, index) => (
               <Button
-                key={month}
+                key={month.value}
                 onClick={() => handleSelectMonth(index)}
                 variant={selectedMonth === index ? "default" : "outline"}
                 className="text-sm"
                 disabled={isMonthDisabled(index)}
               >
-                {month}
+                {month.label}
               </Button>
             ))}
           </div>

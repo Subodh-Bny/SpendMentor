@@ -1,14 +1,15 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Card } from "../ui/card";
 import { useTheme } from "next-themes";
 import {
   useGetCategoryTotal,
+  useGetMonthlyExpenses,
   useGetTotalExpenses,
 } from "@/hooks/use-analytics";
-import { useGetExpenses } from "@/services/api/expenseApi";
+import MonthSelector from "../month-selector";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -41,10 +42,16 @@ const colors = [
 ];
 
 const CategoryBreakdown = () => {
-  const { data: expenses } = useGetExpenses();
+  const [month, setMonth] = useState<number>(new Date().getMonth());
 
-  const aggregatedData = useAggregateExpenses(expenses || []);
-  const expensesTotal = useGetTotalExpenses(expenses || []);
+  const currentMonthExpenses = useGetMonthlyExpenses(
+    month,
+    new Date().getFullYear()
+  );
+
+  const aggregatedData = useAggregateExpenses(currentMonthExpenses || []);
+
+  const expensesTotal = useGetTotalExpenses(currentMonthExpenses || []);
 
   const { theme } = useTheme();
 
@@ -79,31 +86,37 @@ const CategoryBreakdown = () => {
       },
     },
   };
-
   return (
     <Card className="grid p-9 md:grid-cols-2 items-center gap-11 ">
-      <div>
-        <h1 className="text-2xl font-bold">Total Expenses:</h1>
-        <p className="font-bold text-6xl mt-4">Rs. {expensesTotal}</p>
+      <div className="flex flex-col justify-between gap-4 h-full">
+        <MonthSelector setMonth={setMonth} />
+        <div>
+          <h1 className="text-2xl font-bold">Total Expenses:</h1>
+          <p className="font-bold text-6xl mt-4">Rs. {expensesTotal}</p>
+        </div>
       </div>
-      <div className="grid lg:grid-cols-2 items-center gap-11">
-        <div className="flex-grow max-w-sm ">
-          <div className="relative h-64 w-64">
-            <Doughnut data={pieData} options={options} />
+      {aggregatedData.length <= 0 ? (
+        <p>No expenses made in this month.</p>
+      ) : (
+        <div className="grid lg:grid-cols-2 items-center gap-11">
+          <div className="flex-grow max-w-sm ">
+            <div className="relative h-64 w-64">
+              <Doughnut data={pieData} options={options} />
+            </div>
+          </div>
+          <div className="flex flex-col">
+            {aggregatedData.map((expense, index) => (
+              <div key={index} className="flex items-center mb-2">
+                <div
+                  className="w-4 h-4 mr-2"
+                  style={{ backgroundColor: colors[index % colors.length] }}
+                ></div>
+                <span>{expense.category}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="flex flex-col">
-          {aggregatedData.map((expense, index) => (
-            <div key={index} className="flex items-center mb-2">
-              <div
-                className="w-4 h-4 mr-2"
-                style={{ backgroundColor: colors[index % colors.length] }}
-              ></div>
-              <span>{expense.category}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </Card>
   );
 };

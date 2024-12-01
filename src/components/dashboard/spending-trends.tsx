@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -19,6 +19,7 @@ import {
   useGetMonthlyExpenses,
 } from "@/hooks/use-analytics";
 import { useTheme } from "next-themes";
+import MonthSelector from "../month-selector";
 
 ChartJS.register(
   LineElement,
@@ -50,7 +51,7 @@ const usePrepareSpendData = (month: number, year: number) => {
 };
 
 const SpendTrendAnalysisChart = () => {
-  const month = new Date().getMonth(); // March (0 = January, 1 = February, etc.)
+  const [month, setMonth] = useState(new Date().getMonth());
   const year = new Date().getFullYear();
 
   const { theme } = useTheme();
@@ -118,9 +119,12 @@ const SpendTrendAnalysisChart = () => {
   };
 
   return (
-    <Card className="p-9">
-      <h1 className="text-4xl font-bold">Category Spend Trend</h1>
-      <div className="h-80 mt-4 overflow-scroll">
+    <Card className="p-9 space-y-8">
+      <div className="grid md:grid-cols-2 space-y-3 items-center">
+        <h1 className="text-4xl font-bold">Category Spend Trend</h1>
+        <MonthSelector setMonth={setMonth} />
+      </div>
+      <div className="h-80 overflow-scroll">
         <Line data={lineData} options={options} />
       </div>
     </Card>
