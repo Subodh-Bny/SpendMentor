@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Calendar1, ChevronLeft, ChevronRight } from "lucide-react";
-import { addYears, subYears, format, isBefore, startOfMonth } from "date-fns";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, isBefore, startOfMonth } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 interface MonthYearPickerProps {
   value?: Date;
   onChange?: (date: Date) => void;
+  isDateDisabled?: (date: Date) => boolean;
 }
 
 const months = [
@@ -32,35 +33,49 @@ const months = [
   "Dec",
 ];
 
-export function MonthYearPicker({ value, onChange }: MonthYearPickerProps) {
-  const [date, setDate] = React.useState(value || new Date());
+export function MonthYearPicker({
+  value,
+  onChange,
+  isDateDisabled,
+}: MonthYearPickerProps) {
   const currentDate = new Date();
+  const [selectedYear, setSelectedYear] = React.useState<number>(
+    value ? value.getFullYear() : currentDate.getFullYear()
+  );
+  const [selectedMonth, setSelectedMonth] = React.useState<number | null>(
+    value ? value.getMonth() : null
+  );
 
   const handlePreviousYear = () => {
-    setDate((prevDate) => subYears(prevDate, 1));
+    setSelectedYear(selectedYear - 1);
+    setSelectedMonth(null);
   };
 
   const handleNextYear = () => {
-    setDate((prevDate) => addYears(prevDate, 1));
+    setSelectedYear(selectedYear + 1);
+    setSelectedMonth(null);
   };
 
   const handleSelectMonth = (monthIndex: number) => {
-    const newDate = new Date(date.getFullYear(), monthIndex, 1);
-    setDate(newDate);
+    const newDate = new Date(selectedYear, monthIndex, 1);
+    setSelectedMonth(monthIndex);
     onChange?.(newDate);
   };
 
   const isMonthDisabled = (monthIndex: number) => {
-    if (date.getFullYear() > currentDate.getFullYear()) {
-      return false;
-    }
-    if (date.getFullYear() < currentDate.getFullYear()) {
+    const monthDate = new Date(selectedYear, monthIndex, 1);
+
+    if (isDateDisabled && isDateDisabled(monthDate)) {
       return true;
     }
-    return isBefore(
-      new Date(date.getFullYear(), monthIndex),
-      startOfMonth(currentDate)
-    );
+
+    if (selectedYear > currentDate.getFullYear()) {
+      return false;
+    }
+    if (selectedYear < currentDate.getFullYear()) {
+      return true;
+    }
+    return isBefore(monthDate, startOfMonth(currentDate));
   };
 
   return (
@@ -69,12 +84,12 @@ export function MonthYearPicker({ value, onChange }: MonthYearPickerProps) {
         <Button
           variant={"outline"}
           className={cn(
-            "justify-start text-left font-normal",
+            "w-full justify-start text-left font-normal",
             !value && "text-muted-foreground"
           )}
         >
+          <CalendarIcon className="mr-2 h-4 w-4" />
           {value ? format(value, "MMMM yyyy") : <span>Pick a month</span>}
-          <Calendar1 className="ml-auto" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -84,15 +99,19 @@ export function MonthYearPicker({ value, onChange }: MonthYearPickerProps) {
               variant="outline"
               size="icon"
               onClick={handlePreviousYear}
-              disabled={date.getFullYear() <= currentDate.getFullYear()}
+              disabled={selectedYear <= currentDate.getFullYear()}
+              aria-label="Previous year"
             >
               <ChevronLeft className="h-4 w-4" />
-              <span className="sr-only">Previous year</span>
             </Button>
-            <div className="text-sm font-medium">{date.getFullYear()}</div>
-            <Button variant="outline" size="icon" onClick={handleNextYear}>
+            <div className="text-sm font-medium">{selectedYear}</div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleNextYear}
+              aria-label="Next year"
+            >
               <ChevronRight className="h-4 w-4" />
-              <span className="sr-only">Next year</span>
             </Button>
           </div>
           <div className="grid grid-cols-3 gap-2">
@@ -100,7 +119,7 @@ export function MonthYearPicker({ value, onChange }: MonthYearPickerProps) {
               <Button
                 key={month}
                 onClick={() => handleSelectMonth(index)}
-                variant={date.getMonth() === index ? "default" : "outline"}
+                variant={selectedMonth === index ? "default" : "outline"}
                 className="text-sm"
                 disabled={isMonthDisabled(index)}
               >

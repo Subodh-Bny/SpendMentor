@@ -26,6 +26,18 @@ export const createSavingsGoal = async (req: Request) => {
 
     const { targetAmount, targetDate, currentAmount } = await req.json();
 
+    const existingGoal = await SavingsGoal.findOne({ targetDate });
+
+    if (existingGoal) {
+      return NextResponse.json(
+        {
+          message:
+            "Goal for selected date already exists. Please update the existing one or create goal for another date",
+        },
+        { status: 400 }
+      );
+    }
+
     const newSavingsGoal = new SavingsGoal({
       targetAmount,
       targetDate,
@@ -64,7 +76,9 @@ export const getSavingsGoal = async (req: Request) => {
 
     const { userId } = authResult;
 
-    const savingsGoal = await SavingsGoal.find({ user: userId });
+    const savingsGoal = await SavingsGoal.find({ user: userId }).sort({
+      targetDate: 1,
+    });
 
     return NextResponse.json(
       { message: "SavingsGoal fetched successfully", data: savingsGoal },
@@ -119,12 +133,12 @@ export const updateSavingsGoal = async (
 
   try {
     await dbConnect();
-    const { updateAmount, targetDate } = await req.json();
+    const { currentAmount, targetAmount, targetDate } = await req.json();
     const { id } = await params;
 
     const updatedGoal = await SavingsGoal.findOneAndUpdate(
-      { targetDate, _id: id },
-      { $set: { targetAmount: updateAmount, targetDate } },
+      { _id: id },
+      { $set: { targetAmount, currentAmount, targetDate } },
       { new: true, runValidators: true }
     );
 

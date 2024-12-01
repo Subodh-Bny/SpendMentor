@@ -41,7 +41,7 @@ const useGetCurrentMonthTarget = (
   const { data: savingsGoalData } = useGetSavingsGoal();
   const currentMonthTarget = savingsGoalData?.find(
     (data) =>
-      new Date(data.targetDate).getMonth() === month &&
+      new Date(data.targetDate).getMonth() === month && // Subtract 1 to convert from 1-based to 0-based
       new Date(data.targetDate).getFullYear() === new Date().getFullYear()
   );
   if (!currentMonthTarget) {
@@ -51,32 +51,35 @@ const useGetCurrentMonthTarget = (
     target: parseInt(
       typeof currentMonthTarget?.targetAmount === "string"
         ? currentMonthTarget.targetAmount
-        : ""
+        : "0"
     ),
     current: parseInt(
       typeof currentMonthTarget?.currentAmount === "string"
         ? currentMonthTarget.currentAmount
-        : ""
+        : "0"
     ),
   };
 };
 
 export default function SavingsGoal() {
-  const [month, setMonth] = useState(new Date().getMonth());
+  const [month, setMonth] = useState(new Date().getMonth()); // Add 1 to convert from 0-based to 1-based
   const { target, current } = useGetCurrentMonthTarget(month);
 
-  const percentageAchieved = (current / target) * 100;
+  const percentageAchieved = target > 0 ? (current / target) * 100 : 0;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="grid grid-cols-2 items-center">
           Savings Goal{" "}
-          <Select onValueChange={(value) => setMonth(Number(value))}>
+          <Select
+            defaultValue={new Date().getMonth().toString()}
+            onValueChange={(value) => setMonth(Number(value))}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select Month" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="h-56">
               {months.map((month) => (
                 <SelectItem key={month.value} value={month.value}>
                   {month.label}
