@@ -10,6 +10,7 @@ import {
   useGetTotalExpenses,
 } from "@/hooks/use-analytics";
 import MonthSelector from "../month-selector";
+import { LoaderCircle } from "lucide-react";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -43,8 +44,9 @@ const colors = [
 
 const CategoryBreakdown = () => {
   const [month, setMonth] = useState<number>(new Date().getMonth());
+  const { theme } = useTheme();
 
-  const currentMonthExpenses = useGetMonthlyExpenses(
+  const { expenses: currentMonthExpenses, isLoading } = useGetMonthlyExpenses(
     month,
     new Date().getFullYear()
   );
@@ -52,8 +54,6 @@ const CategoryBreakdown = () => {
   const aggregatedData = useAggregateExpenses(currentMonthExpenses || []);
 
   const expensesTotal = useGetTotalExpenses(currentMonthExpenses || []);
-
-  const { theme } = useTheme();
 
   const pieData = {
     labels: aggregatedData.map((expense) => expense.category),
@@ -95,7 +95,13 @@ const CategoryBreakdown = () => {
           <p className="font-bold text-6xl mt-4">Rs. {expensesTotal}</p>
         </div>
       </div>
-      {aggregatedData.length <= 0 ? (
+
+      {isLoading ? (
+        <LoaderCircle
+          className="animate-spin justify-self-center dark:text-white"
+          size={40}
+        />
+      ) : aggregatedData.length <= 0 ? (
         <p>No expenses made in this month.</p>
       ) : (
         <div className="grid lg:grid-cols-2 items-center gap-11">

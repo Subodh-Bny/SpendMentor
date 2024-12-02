@@ -3,17 +3,20 @@ import { useGetAnalytics } from "@/services/api/analyticsApi";
 export const useGetMonthlyExpenses = (
   month: number, // Pass zero-indexed month
   year: number
-): IExpense[] => {
+): { expenses: IExpense[]; isLoading: boolean } => {
   const { data: financialData, isLoading, error } = useGetAnalytics();
 
-  if (isLoading || error || !financialData) return [];
+  if (error || !financialData) return { expenses: [], isLoading: isLoading };
 
-  return financialData.expenses.filter((expense) => {
-    const expenseDate = new Date(expense.date);
-    return (
-      expenseDate.getMonth() === month && expenseDate.getFullYear() === year
-    );
-  });
+  return {
+    expenses: financialData.expenses.filter((expense) => {
+      const expenseDate = new Date(expense.date);
+      return (
+        expenseDate.getMonth() === month && expenseDate.getFullYear() === year
+      );
+    }),
+    isLoading: isLoading,
+  };
 };
 
 export const useGetYearlyExpenses = (year: number): IExpense[] => {

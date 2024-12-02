@@ -1,19 +1,13 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
 import { Progress } from "@/components/ui/progress";
 import { useGetSavingsGoal } from "@/services/api/savingsGoalApi";
 
 import { useState } from "react";
 import MonthSelector from "../month-selector";
+import ArrowLink from "../ArrowLink";
+import routes from "@/config/routes";
+import DashCard from "./dash-card";
 
 const useGetCurrentMonthTarget = (
   month: number
@@ -48,24 +42,25 @@ export default function SavingsGoal() {
   const percentageAchieved = target > 0 ? (current / target) * 100 : 0;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="grid grid-cols-2 items-center">
+    <DashCard
+      title={
+        <>
           Savings Goal
           <MonthSelector setMonth={setMonth} />
-        </CardTitle>
-        <CardDescription>Progress towards your target</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">
-          Rs. {current.toFixed(2)} / Rs. {target}
-        </div>
-        <Progress value={percentageAchieved} className="mt-2" />
-        <p className="mt-2 text-xs text-muted-foreground">
-          You&apos;ve saved {percentageAchieved.toFixed(1)}% of your goal
-        </p>
-      </CardContent>
-      <CardFooter></CardFooter>
-    </Card>
+        </>
+      }
+      description="Progress towards your target"
+      footer={
+        <ArrowLink href={routes.dashboard.goals}>Manage your goals</ArrowLink>
+      }
+    >
+      <div className="text-2xl font-bold">
+        Rs. {current.toFixed(2)} / Rs. {target}
+      </div>
+      <Progress value={percentageAchieved} className="mt-2" />
+      <p className="mt-2 text-xs text-muted-foreground">
+        You&apos;ve saved {percentageAchieved.toFixed(1)}% of your goal
+      </p>
+    </DashCard>
   );
 }

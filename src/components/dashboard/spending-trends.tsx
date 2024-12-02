@@ -33,7 +33,7 @@ ChartJS.register(
 
 const usePrepareSpendData = (month: number, year: number) => {
   // Get the expenses for a given month and year
-  const expenses: IExpense[] = useGetMonthlyExpenses(month, year);
+  const { expenses } = useGetMonthlyExpenses(month, year);
 
   // Get all categories
   const allCategories: ICategory[] = useGetCategories();
