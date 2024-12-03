@@ -18,9 +18,32 @@ export const useUpdateUser = () => {
     },
     onSuccess: (data) => {
       toast.success(data.message);
-      console.log(data);
       setUser(data.data);
       Cookie.set("user", JSON.stringify({ ...data.data }));
+    },
+    onError: (error) => {
+      requestError(error as AxiosError<IApiResponse, unknown>);
+    },
+  });
+};
+
+interface IChangePassword {
+  newPassword: string;
+  currentPassword: string;
+}
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: async (data: IChangePassword) => {
+      const response: AxiosResponse<IQueryResponse<IUser>> =
+        await axiosInstance.put<IApiResponse>(
+          endpoints.user + "change-password/",
+          data
+        );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
     },
     onError: (error) => {
       requestError(error as AxiosError<IApiResponse, unknown>);
