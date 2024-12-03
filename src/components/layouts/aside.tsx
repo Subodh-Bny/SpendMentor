@@ -1,4 +1,6 @@
-import React from "react";
+"use clinet";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
 
 import {
   Sheet,
@@ -13,11 +15,12 @@ import {
   Goal,
   Blocks,
   LayoutDashboard,
+  Settings,
 } from "lucide-react";
 import { AuthContext } from "@/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import routes from "@/config/routes";
-import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const links = [
   {
@@ -53,8 +56,16 @@ const links = [
 const Aside = () => {
   const { logout } = React.useContext(AuthContext);
   const { user } = React.useContext(AuthContext);
+  const [open, setOpen] = useState(false);
+
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger>
         <Avatar className="w-9 h-9 animate-pulse">
           <AvatarImage
@@ -102,6 +113,16 @@ const Aside = () => {
               </Link>
             </li>
           ))}
+          <hr className="mt-2" />
+          <li>
+            <Link
+              href={routes.settings}
+              className="flex gap-2 hover:bg-accent px-2 py-1 rounded-sm transition-all text-sm mt-1"
+            >
+              <Settings size={20} />
+              Settings
+            </Link>
+          </li>
           <hr className="mt-2" />
           <li
             className="text-red-500  hover:bg-accent px-2 py-1 rounded-sm transition-all mt-2"

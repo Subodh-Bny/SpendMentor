@@ -7,6 +7,7 @@ const routes = {
     goals: "/dashboard/goals",
     categories: "/dashboard/categories",
   },
+  settings: "/settings",
 };
 
 export default routes;
