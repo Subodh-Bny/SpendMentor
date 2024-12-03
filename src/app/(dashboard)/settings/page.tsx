@@ -2,6 +2,7 @@ import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UpdateAccount from "@/components/settings/update-account";
 import ChangePassword from "@/components/settings/change-password";
+import SetIncome from "@/components/settings/set-income";
 
 const Settings = () => {
   return (
@@ -16,6 +17,9 @@ const Settings = () => {
       </TabsContent>
       <TabsContent value="password">
         <ChangePassword />
+      </TabsContent>
+      <TabsContent value="income">
+        <SetIncome />
       </TabsContent>
     </Tabs>
   );

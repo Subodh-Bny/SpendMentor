@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import axiosInstance from "../axiosInstance";
 import toast from "react-hot-toast";
@@ -47,6 +47,35 @@ export const useChangePassword = () => {
     },
     onError: (error) => {
       requestError(error as AxiosError<IApiResponse, unknown>);
+    },
+  });
+};
+
+export const useSetIncome = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: IUserIncome) => {
+      const response: AxiosResponse<IQueryResponse> =
+        await axiosInstance.put<IApiResponse>(endpoints.user + "income/", data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      queryClient.invalidateQueries({ queryKey: ["income"] });
+    },
+    onError: (error) => {
+      requestError(error as AxiosError<IApiResponse, unknown>);
+    },
+  });
+};
+
+export const useGetUserIncome = () => {
+  return useQuery({
+    queryKey: ["income"],
+    queryFn: async () => {
+      const res: AxiosResponse<IQueryResponse<IUserIncome>> =
+        await axiosInstance.get<IApiResponse>(endpoints.user + "income/");
+      return res.data?.data || { income: "" };
     },
   });
 };

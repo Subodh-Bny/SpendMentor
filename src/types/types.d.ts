@@ -58,3 +58,8 @@ interface ISavingsGoal {
   updateAmount?: string;
   user?: string | IUser;
 }
+
+interface IUserIncome {
+  user?: string | IUser;
+  income: number;
+}

@@ -4,6 +4,7 @@ import "@/models/category.model";
 import "@/models/user.model";
 import "@/models/expenses.model";
 import "@/models/savings.goal.model";
+import "@/models/income.model";
 
 const MONGODB_URI = process.env.DATABASE_URL as string;
 
