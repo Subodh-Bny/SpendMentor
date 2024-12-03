@@ -10,6 +10,7 @@ const endpoints = {
   analytics: "/analytics/",
   savingsGoal: "/savings-goal/",
   reports: "/report/",
+  user: "/user/",
 };
 
 export default endpoints;
