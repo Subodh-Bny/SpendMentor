@@ -56,7 +56,10 @@ export default function SetIncome() {
       <Card>
         <CardHeader>
           <CardTitle>Set Your Income</CardTitle>
-          <CardDescription>Enter your annual income below</CardDescription>
+          <CardDescription>
+            Enter your monthly income below for better recommendations on your
+            budget management
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent>

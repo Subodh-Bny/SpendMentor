@@ -63,3 +63,8 @@ interface IUserIncome {
   user?: string | IUser;
   income: number;
 }
+
+interface IRecommendation {
+  similarityScore: number;
+  recommendations: string;
+}

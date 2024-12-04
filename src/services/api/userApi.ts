@@ -75,7 +75,20 @@ export const useGetUserIncome = () => {
     queryFn: async () => {
       const res: AxiosResponse<IQueryResponse<IUserIncome>> =
         await axiosInstance.get<IApiResponse>(endpoints.user + "income/");
-      return res.data?.data || { income: "" };
+      return res.data?.data || { income: 0 };
+    },
+  });
+};
+
+export const useGetRecommendation = () => {
+  return useQuery({
+    queryKey: ["recommendations"],
+    queryFn: async () => {
+      const res: AxiosResponse<IQueryResponse<IRecommendation>> =
+        await axiosInstance.get<IApiResponse>(
+          endpoints.user + "category-recommendations/"
+        );
+      return res.data?.data || { similarityScore: 0, recommendations: "" };
     },
   });
 };

@@ -10,7 +10,6 @@ export const useCreateSavingsGoal = () => {
   return useMutation({
     mutationKey: ["savings-goal"],
     mutationFn: async (data: ISavingsGoal) => {
-      console.log(data);
       const res: AxiosResponse<IQueryResponse> =
         await axiosInstance.post<IApiResponse>(endpoints.savingsGoal, data);
       return res.data;
