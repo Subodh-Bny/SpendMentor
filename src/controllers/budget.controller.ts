@@ -120,8 +120,6 @@ export const getBudgets = async (req: Request) => {
           },
         ]);
 
-        console.log("Spent Aggregation Result:", spentAggregation);
-
         const totalSpent = spentAggregation[0]?.totalSpent || 0;
         return { ...budget.toObject(), spent: totalSpent };
       })
@@ -174,8 +172,6 @@ async function getSingleBudgetSpent(userId: string, budget: IBudget) {
   const category: string =
     (typeof budget?.category === "object" ? budget?.category?.id : "") || "";
 
-  console.log(category);
-  console.log(userId);
   const spentAggregation = await Expense.aggregate([
     {
       $match: {

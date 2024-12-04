@@ -52,7 +52,7 @@ export default function ExpenseTable() {
   return (
     <div>
       <div className="flex w-full justify-between">
-        <h2 className="text-2xl font-bold mb-4">Expense Report</h2>
+        <h2 className="text-2xl font-bold mb-4">Expenses</h2>
         <Button onClick={() => handleDialog()}>Add expense</Button>
         <AddExpense
           open={addUpdateDialogOpen}

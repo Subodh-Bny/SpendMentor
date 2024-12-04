@@ -30,7 +30,6 @@ export const useUpdateBudget = () => {
     mutationFn: async (data: IBudget) => {
       const res: AxiosResponse<IQueryResponse> =
         await axiosInstance.put<IApiResponse>(endpoints.budget + data.id, data);
-      console.log(data);
       return res.data;
     },
     onSuccess: (data) => {

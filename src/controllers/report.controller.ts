@@ -31,6 +31,11 @@ export const generateHTMLReport = async (req: Request) => {
       .populate("category")
       .sort({ date: 1 });
 
+    const totalExpenses = expenses?.reduce(
+      (sum, acc) => (sum += Number(acc.amount)),
+      0
+    );
+
     const htmlContent = `
      <!DOCTYPE html>
 <html lang="en">
@@ -139,8 +144,8 @@ export const generateHTMLReport = async (req: Request) => {
         </tbody>
       </table>
       <div class="summary">
-        <div>Total Expenses: $1350</div>
-        <div>Total Entries: 2</div>
+        <div>Total Expenses: Rs. ${totalExpenses || 0}</div>
+        <div>Total Entries: ${expenses?.length || 0}</div>
       </div>
     </div>
   </body>
