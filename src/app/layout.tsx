@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SpendWise",
+  title: "SpendMentor",
   description: "Track your expenses",
 };
 

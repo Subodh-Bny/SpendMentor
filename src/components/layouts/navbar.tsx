@@ -18,13 +18,13 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href={routes.dashboard.home} className="flex-shrink-0 ">
-              <span className="sr-only">SpendWise</span>
+              <span className="sr-only">SpendMentor</span>
               <Image
                 src={"/logo.svg"}
                 width={75}
                 height={75}
                 priority
-                alt="SpendWise logo"
+                alt="SpendMentor logo"
               />
             </Link>
           </div>
