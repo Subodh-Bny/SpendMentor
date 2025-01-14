@@ -130,7 +130,7 @@ export default function LoginPage() {
               {loading ? <ClipLoader size={20} /> : "Log in"}
             </Button>
           </form>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             {/* <div className="flex items-center space-x-2">
               <Input
                 id="remember"
@@ -149,10 +149,10 @@ export default function LoginPage() {
               open={verificationDialogOpen}
               onOpenChange={setVerificationDialogOpen}
             >
-              <DialogTrigger className="underline text-primary text-sm">
+              <DialogTrigger className=" text-blue-600 dark:text-blue-300 text-sm">
                 Verify Email
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="">
                 <DialogHeader>
                   <DialogTitle className="mb-2">
                     Enter verification email
@@ -165,7 +165,7 @@ export default function LoginPage() {
                       onChange={(e) => {
                         setVerifyEmail(e.target.value);
                       }}
-                      className=" border-blue-300 rounded text-white focus:ring-blue-500"
+                      className=" border-blue-300 rounded dark:text-white  focus:ring-blue-500"
                       placeholder="example@gmail.com"
                     />
                     <span className="flex w-full justify-between items-center">

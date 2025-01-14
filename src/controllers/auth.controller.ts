@@ -65,6 +65,13 @@ export const sendVerificationAgain = async (req: Request) => {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
+    if (user.isVerified) {
+      return NextResponse.json(
+        { message: "Email already verified" },
+        { status: 401 }
+      );
+    }
+
     const verificationToken = user.getVerificationToken();
 
     await user.save({ validateBeforeSave: false });
@@ -205,15 +212,16 @@ export const login = async (req: Request) => {
       email,
     });
 
-    if (!user.isVerified) {
-      return NextResponse.json(
-        { message: "Verify your email to login." },
-        { status: 401 }
-      );
-    }
     if (!user) {
       return NextResponse.json(
         { message: "Invalid email or password" },
+        { status: 401 }
+      );
+    }
+
+    if (!user.isVerified) {
+      return NextResponse.json(
+        { message: "Verify your email to login." },
         { status: 401 }
       );
     }

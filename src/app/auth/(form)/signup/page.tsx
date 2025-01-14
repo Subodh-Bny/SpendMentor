@@ -134,10 +134,10 @@ export default function SignupPage() {
                 <p className="text-red-500">{errors.password.message}</p>
               )}
             </div>
-            <CardFooter>
+            <CardFooter className="w-full p-0">
               <Button
                 type="submit"
-                className="w-full bg-primary hover:bg-blue-700 text-white"
+                className="bg-primary hover:bg-blue-700 text-white w-full"
               >
                 Sign Up
               </Button>
