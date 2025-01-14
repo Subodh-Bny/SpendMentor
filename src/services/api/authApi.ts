@@ -2,7 +2,7 @@ import { AxiosError, AxiosResponse } from "axios";
 import { requestError } from "./requestError";
 import axiosInstance from "../axiosInstance";
 import endpoints from "../endpoints";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import routes from "@/config/routes";
@@ -15,6 +15,38 @@ export const useSignup = () => {
     mutationFn: async (data: IUser) => {
       const response: AxiosResponse<IQueryResponse> =
         await axiosInstance.post<IApiResponse>(endpoints.auth.signup, data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      requestError(error as AxiosError<IApiResponse, unknown>);
+    },
+  });
+};
+
+export const useVerifyEmail = ({ token }: { token: string }) => {
+  return useQuery({
+    queryKey: ["verification", token],
+    queryFn: async () => {
+      console.log("helloooooooooooooooooooo", token);
+      const response = await axiosInstance.get<IApiResponse>(
+        `${endpoints.auth.verifyEmail}?token=${token}`
+      );
+      return response.data;
+    },
+  });
+};
+
+export const useSendVerificationAgain = () => {
+  return useMutation({
+    mutationFn: async (data: { email: string }) => {
+      const response: AxiosResponse<IQueryResponse> =
+        await axiosInstance.post<IApiResponse>(
+          endpoints.auth.verifyEmail,
+          data
+        );
       return response.data;
     },
     onSuccess: (data) => {

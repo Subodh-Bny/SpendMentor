@@ -19,6 +19,9 @@ interface IUser {
   email: string;
   password: string;
   confirmPassword?: string;
+  isVerified?: boolean;
+  verificationToken?: string;
+  verificationTokenExpire?: Date;
 }
 
 interface ICategory {

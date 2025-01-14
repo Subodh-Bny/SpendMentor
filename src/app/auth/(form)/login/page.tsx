@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,22 +11,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
 import routes from "@/config/routes";
-import { useLogin } from "@/services/api/authApi";
+import { useLogin, useSendVerificationAgain } from "@/services/api/authApi";
 import { ClipLoader } from "react-spinners";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [verifyEmail, setVerifyEmail] = useState<string>("");
+  const [verificationDialogOpen, setVerificationDialogOpen] =
+    useState<boolean>(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   const { mutate: login, isPending: loading } = useLogin();
+  const { mutate: sendVerification, isPending: verificationEmailPending } =
+    useSendVerificationAgain();
+
+  useEffect(() => {
+    if (!verificationEmailPending) setVerificationDialogOpen(false);
+  }, [verificationEmailPending]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +56,10 @@ export default function LoginPage() {
         },
       }
     );
+  };
+
+  const handleSendVerification = () => {
+    sendVerification({ email: verifyEmail });
   };
 
   return (
@@ -110,7 +131,7 @@ export default function LoginPage() {
             </Button>
           </form>
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+            {/* <div className="flex items-center space-x-2">
               <Input
                 id="remember"
                 type="checkbox"
@@ -122,13 +143,50 @@ export default function LoginPage() {
               >
                 Remember me
               </Label>
-            </div>
-            <a
-              href="#"
-              className="text-sm text-blue-600 hover:underline dark:text-blue-300"
+            </div> */}
+
+            <Dialog
+              open={verificationDialogOpen}
+              onOpenChange={setVerificationDialogOpen}
             >
-              Forgot password?
-            </a>
+              <DialogTrigger className="underline text-primary text-sm">
+                Verify Email
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="mb-2">
+                    Enter verification email
+                  </DialogTitle>
+                  <DialogDescription className="space-y-2">
+                    <Input
+                      id="remember"
+                      type="email"
+                      value={verifyEmail}
+                      onChange={(e) => {
+                        setVerifyEmail(e.target.value);
+                      }}
+                      className=" border-blue-300 rounded text-white focus:ring-blue-500"
+                      placeholder="example@gmail.com"
+                    />
+                    <span className="flex w-full justify-between items-center">
+                      <span>Check your email to verify.</span>
+                      <Button
+                        disabled={
+                          verifyEmail === "" || verificationEmailPending
+                        }
+                        onClick={handleSendVerification}
+                      >
+                        {verificationEmailPending ? (
+                          <ClipLoader size={15} />
+                        ) : (
+                          "Send"
+                        )}
+                      </Button>
+                    </span>
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">

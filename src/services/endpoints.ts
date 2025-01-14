@@ -3,6 +3,7 @@ const endpoints = {
     login: "/auth/login",
     signup: "/auth/signup",
     logout: "/auth/logout",
+    verifyEmail: "/auth/verify-email",
   },
   expense: "/expense/",
   category: "/category/",
