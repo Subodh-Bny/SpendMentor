@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 
 interface SpendingInsightsProps {
   similarityScore: number;
-  recommendations: string;
+  recommendations: string[];
 }
 
 export function SpendingRecommendation({
@@ -17,9 +17,9 @@ export function SpendingRecommendation({
   recommendations,
 }: SpendingInsightsProps) {
   const similarityPercentage = Number((similarityScore * 100).toFixed(2));
-
+  console.log(recommendations);
   return (
-    <Card className="w-full ">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Spending Insights</CardTitle>
         <CardDescription>
@@ -41,7 +41,14 @@ export function SpendingRecommendation({
           </div>
           <div>
             <h4 className="text-sm font-semibold mb-2">Recommendations</h4>
-            <p className="text-sm text-muted-foreground">{recommendations}</p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              {recommendations?.map((rec, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span>{rec}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </CardContent>

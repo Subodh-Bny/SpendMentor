@@ -69,5 +69,5 @@ interface IUserIncome {
 
 interface IRecommendation {
   similarityScore: number;
-  recommendations: string;
+  recommendations: string[];
 }

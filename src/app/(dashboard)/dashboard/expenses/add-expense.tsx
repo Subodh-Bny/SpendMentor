@@ -167,13 +167,25 @@ export default function AddExpense({
   };
 
   async function onSubmit(values: ExpenseInput) {
+    const utcDate = new Date(
+      Date.UTC(
+        values.date.getFullYear(),
+        values.date.getMonth(),
+        values.date.getDate()
+      )
+    );
     if (values.category === "other" && values.newCategory) {
       createCategory(
         { name: values.newCategory },
         {
           onSuccess: (response) => {
             const newCategoryId = response?.data?.id || "";
-            handleSaveExpense({ ...values, category: newCategoryId });
+
+            handleSaveExpense({
+              ...values,
+              date: utcDate,
+              category: newCategoryId,
+            });
           },
           onError: (error) => {
             toast.error(error.message || "Failed to create category.");
@@ -181,7 +193,7 @@ export default function AddExpense({
         }
       );
     } else {
-      handleSaveExpense(values);
+      handleSaveExpense({ ...values, date: utcDate });
     }
   }
 

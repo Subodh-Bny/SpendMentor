@@ -88,7 +88,7 @@ export const useGetRecommendation = () => {
         await axiosInstance.get<IApiResponse>(
           endpoints.user + "category-recommendations/"
         );
-      return res.data?.data || { similarityScore: 0, recommendations: "" };
+      return res.data?.data || { similarityScore: 0, recommendations: [] };
     },
   });
 };

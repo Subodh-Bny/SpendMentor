@@ -56,7 +56,7 @@ const DashboardPage = () => {
         <section>
           <SpendingRecommendation
             similarityScore={recommendations?.similarityScore || 0}
-            recommendations={recommendations?.recommendations || ""}
+            recommendations={recommendations?.recommendations || []}
           />
         </section>
         <section>
