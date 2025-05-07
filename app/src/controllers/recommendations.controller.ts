@@ -12,9 +12,7 @@ interface IMonthlyData {
   [month: string]: ICategorySpending;
 }
 
-export default async function getExpensesRecommendations(
-  req: Request
-): Promise<NextResponse> {
+export default async function getExpensesRecommendations(): Promise<NextResponse> {
   try {
     await dbConnect();
 
@@ -53,14 +51,14 @@ export default async function getExpensesRecommendations(
       "0"
     )}`;
 
-    const { monthlyData, categories } = organizeExpensesByMonth(expenses);
+    const { categories } = organizeExpensesByMonth(expenses);
 
-    const { startStr: currentStart, endStr: currentEnd } =
-      getMonthDateRangeStrings(currentYear, currentMonthNum);
-    const { startStr: prevStart, endStr: prevEnd } = getMonthDateRangeStrings(
-      previousYear,
-      previousMonthNum
-    );
+    // const { startStr: currentStart, endStr: currentEnd } =
+    //   getMonthDateRangeStrings(currentYear, currentMonthNum);
+    // const { startStr: prevStart, endStr: prevEnd } = getMonthDateRangeStrings(
+    //   previousYear,
+    //   previousMonthNum
+    // );
 
     const currentMonthExpenses = filterExpensesByMonth(
       expenses,
@@ -150,7 +148,7 @@ function organizeExpensesByMonth(expenses: any[]) {
   });
 
   return {
-    monthlyData,
+    // monthlyData,
     categories: Array.from(allCategories),
   };
 }
