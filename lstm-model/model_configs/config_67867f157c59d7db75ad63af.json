@@ -5,5 +5,7 @@
     "Food",
     "Transport"
   ],
-  "updated_at": "2025-05-08T21:41:06.122666"
+  "updated_at": "2025-05-10T15:00:18.012235",
+  "min_expense_value": 0.01,
+  "window_size": 6
 }

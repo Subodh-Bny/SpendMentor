@@ -9,8 +9,8 @@ category_ids = [
     "681c04b6e4ad329ef53317ae"
 ]
 user_id = "67867f157c59d7db75ad63af"
-start_date = datetime(2025, 1, 1)
-end_date = datetime(2025, 4, 30)
+start_date = datetime(2024, 8, 1)
+end_date = datetime(2025, 1, 1)
 descriptions = ["Groceries", "Fruits", "Vegetables", "Snacks", "Juice", "Milk", "Bread", "Rice", "Eggs"]
 
 expenses = []
