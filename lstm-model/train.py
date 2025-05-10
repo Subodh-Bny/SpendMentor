@@ -1,16 +1,14 @@
 import numpy as np
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
-from tensorflow.keras.callbacks import EarlyStopping
-from sklearn.preprocessing import MinMaxScaler
+from lstm_numpy import LSTMModel
 from pymongo import MongoClient
 from bson import ObjectId
 import datetime
-import joblib
 import os
 import logging
 from typing import List, Dict, Tuple, Optional
 import json
+from sklearn.preprocessing import MinMaxScaler
+import joblib
 
 # Configure logging
 logging.basicConfig(
@@ -20,8 +18,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Constants
-MIN_TRAINING_MONTHS = 4  # Minimum months needed for training
-WINDOW_SIZE = 3          # Historical months used for prediction
+MIN_TRAINING_MONTHS = 4
+WINDOW_SIZE = 3
 MODELS_DIR = "./models"
 CONFIG_DIR = "./model_configs"
 
@@ -41,13 +39,7 @@ def get_user_categories(user_id: ObjectId) -> Dict[ObjectId, str]:
     return {cat["_id"]: cat["name"] for cat in categories}
 
 def get_monthly_expenses(user_id: ObjectId) -> Tuple[List[Dict], List[str]]:
-    """
-    Fetch and aggregate monthly expenses by category.
-    Returns:
-    - monthly_data: List of monthly expense records
-    - active_categories: Sorted list of categories with sufficient activity
-    """
-    # Get all of the user's categories
+    """Fetch and aggregate monthly expenses by category"""
     category_map = get_user_categories(user_id)
     if not category_map:
         logger.warning(f"No categories found for user {user_id}")
@@ -80,7 +72,7 @@ def get_monthly_expenses(user_id: ObjectId) -> Tuple[List[Dict], List[str]]:
     
     results = list(expenses_collection.aggregate(pipeline))
     
-    # First pass: Collect all months and categories with activity
+    # Collect all months and categories with activity
     all_months = set()
     category_activity = {name: 0 for name in category_map.values()}
     
@@ -101,13 +93,12 @@ def get_monthly_expenses(user_id: ObjectId) -> Tuple[List[Dict], List[str]]:
         logger.warning(f"No active categories found for user {user_id}")
         return [], []
     
-    # Second pass: Organize data by month
+    # Organize data by month
     monthly_data = {}
     for record in results:
         year_month = (record["_id"]["year"], record["_id"]["month"])
         category_name = category_map[record["_id"]["category"]]
         
-        # Only include active categories
         if category_name not in active_categories:
             continue
             
@@ -120,24 +111,13 @@ def get_monthly_expenses(user_id: ObjectId) -> Tuple[List[Dict], List[str]]:
     sorted_months = sorted(monthly_data.keys())
     return [monthly_data[month] for month in sorted_months], active_categories
 
-def prepare_training_data(monthly_expenses: List[Dict], active_categories: List[str]) -> np.ndarray:
-    """Convert to numpy array with consistent category order"""
-    return np.array([
-        [month.get(category, 0.0) for category in active_categories]
-        for month in monthly_expenses
-    ], dtype='float32')
-
-def save_model_config(user_id: ObjectId, active_categories: List[str]):
-    """Save the category configuration for this user's model"""
-    config = {
-        "user_id": str(user_id),
-        "categories": active_categories,
-        "updated_at": datetime.datetime.now().isoformat()
-    }
-    
-    config_path = f"{CONFIG_DIR}/config_{user_id}.json"
-    with open(config_path, 'w') as f:
-        json.dump(config, f, indent=2)
+def create_sequences(data: np.ndarray, window_size: int) -> Tuple[np.ndarray, np.ndarray]:
+    """Create input-output sequences for training"""
+    X, y = [], []
+    for i in range(len(data) - window_size):
+        X.append(data[i:i+window_size])
+        y.append(data[i+window_size])
+    return np.array(X), np.array(y)
 
 def train_model_for_user(user_id: ObjectId) -> bool:
     """Complete training pipeline for a single user"""
@@ -154,39 +134,36 @@ def train_model_for_user(user_id: ObjectId) -> bool:
             return False
             
         # 2. Prepare training data
-        training_data = prepare_training_data(monthly_expenses, active_categories)
+        training_data = np.array([
+            [month[cat] for cat in active_categories]
+            for month in monthly_expenses
+        ], dtype='float32')
         
-        # 3. Scale data and create sequences
+        # 3. Scale data
         scaler = MinMaxScaler()
         scaled_data = scaler.fit_transform(training_data)
         
-        X, y = [], []
-        for i in range(len(scaled_data) - WINDOW_SIZE):
-            X.append(scaled_data[i:i+WINDOW_SIZE])
-            y.append(scaled_data[i+WINDOW_SIZE])
-        X, y = np.array(X), np.array(y)
+        # 4. Create sequences
+        X, y = create_sequences(scaled_data, WINDOW_SIZE)
         
-        # 4. Train model (dynamic input/output sizes based on categories)
-        model = Sequential([
-            LSTM(64, activation='relu', input_shape=(WINDOW_SIZE, len(active_categories))),
-            Dense(len(active_categories))
-        ])
-        model.compile(optimizer='adam', loss='mse')
+        # 5. Initialize and train LSTM
+        lstm = LSTMModel(input_size=len(active_categories), hidden_size=64)
+        lstm.train(X, y, epochs=100, learning_rate=0.01)
         
-        model.fit(
-            X, y,
-            epochs=100,
-            batch_size=8,
-            callbacks=[EarlyStopping(monitor='loss', patience=10)],
-            verbose=1
-        )
-        
-        # 5. Save artifacts
-        model.save(f"{MODELS_DIR}/model_{user_id}.h5")
+        # 6. Save artifacts
+        lstm.save(f"{MODELS_DIR}/lstm_{user_id}.npz")
         joblib.dump(scaler, f"{MODELS_DIR}/scaler_{user_id}.pkl")
-        save_model_config(user_id, active_categories)
         
-        logger.info(f"Successfully trained model for {user_id} with categories: {active_categories}")
+        # Save config
+        config = {
+            "user_id": str(user_id),
+            "categories": active_categories,
+            "updated_at": datetime.datetime.now().isoformat()
+        }
+        with open(f"{CONFIG_DIR}/config_{user_id}.json", 'w') as f:
+            json.dump(config, f, indent=2)
+        
+        logger.info(f"Successfully trained model for {user_id}")
         return True
         
     except Exception as e:

@@ -71,3 +71,15 @@ interface IRecommendation {
   similarityScore: number;
   recommendations: string[];
 }
+
+interface IPrediction {
+  user_id: string;
+  prediction_date: string;
+  categories: string[];
+  predicted_amounts: {
+    Clothes: number;
+    Food: number;
+    Transport: number;
+  };
+  based_on_months: number;
+}

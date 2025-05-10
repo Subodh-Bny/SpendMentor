@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from tensorflow.keras.models import load_model  # Added this import
+from tensorflow.keras.models import load_model  
+from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
 from bson import ObjectId
 import numpy as np
@@ -34,6 +35,14 @@ expenses_collection = db['expenses']
 categories_collection = db['categories']
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"], 
+    allow_headers=["*"],  
+)
 
 def load_model_config(user_id: str) -> Optional[Dict]:
     """Load the category configuration for a user's model"""
@@ -99,7 +108,7 @@ def get_monthly_expenses(user_id: ObjectId, active_categories: List[str]) -> Lis
     sorted_months = sorted(monthly_data.keys())
     return [monthly_data[month] for month in sorted_months]
 
-@app.post("/predict/{user_id}")
+@app.get("/predict/{user_id}")
 async def predict(user_id: str):
     try:
         user_oid = ObjectId(user_id)
