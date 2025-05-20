@@ -6,7 +6,7 @@ export const useExpensePrediction = (userId: string | undefined) => {
     queryKey: ["prediction", userId],
     queryFn: async () => {
       console.log(userId);
-      const response: AxiosResponse<IPrediction> = await axios.get(
+      const response: AxiosResponse<IPrediction> = await axios.post(
         `${process.env.NEXT_PUBLIC_LSTM_URL}${userId}`
       );
       console.log(response.data);
