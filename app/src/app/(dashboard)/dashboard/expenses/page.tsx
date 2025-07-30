@@ -24,9 +24,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useDeleteExpense, useGetExpenses } from "@/services/api/expenseApi";
 import { format } from "date-fns";
-import { Pencil, Trash2 } from "lucide-react";
+import { Filter, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
+import { Select, SelectItem } from "@/components/ui/select";
+import MonthSelector from "@/components/month-selector";
 
 export default function ExpenseTable() {
   const { data: expenses } = useGetExpenses();
@@ -35,8 +37,18 @@ export default function ExpenseTable() {
   const [updateExpense, setUpdateExpense] = useState<IExpense | undefined>(
     undefined
   );
+  const date = new Date();
+  const [month, setMonth] = useState(date.getMonth());
 
-  const total = expenses?.reduce(
+  const currentMonthExpenses = expenses?.filter((exp) => {
+    if (
+      new Date(exp.date).getMonth() === month &&
+      new Date(exp.date).getFullYear() === new Date().getFullYear()
+    )
+      return exp;
+  });
+
+  const total = currentMonthExpenses?.reduce(
     (sum, expense) => sum + parseInt(expense.amount),
     0
   );
@@ -52,7 +64,10 @@ export default function ExpenseTable() {
   return (
     <div>
       <div className="flex w-full justify-between">
-        <h2 className="text-2xl font-bold mb-4">Expenses</h2>
+        <div className="flex gap-2 items-center">
+          <h2 className="text-2xl font-bold mb-4">Expenses</h2>
+          <MonthSelector setMonth={setMonth} />
+        </div>
         <Button onClick={() => handleDialog()}>Add expense</Button>
         <AddExpense
           open={addUpdateDialogOpen}
@@ -75,7 +90,7 @@ export default function ExpenseTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {expenses?.map((expense) => (
+            {currentMonthExpenses?.map((expense) => (
               <TableRow key={expense.id}>
                 <TableCell className="font-medium">
                   {format(new Date(expense.date), "MMMM do, yyyy")}
