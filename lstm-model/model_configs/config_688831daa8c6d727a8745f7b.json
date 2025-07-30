@@ -1,0 +1,12 @@
+{
+  "user_id": "688831daa8c6d727a8745f7b",
+  "categories": [
+    "Food",
+    "Transport",
+    "Clothes",
+    "Entertainment"
+  ],
+  "updated_at": "2025-07-30T16:17:46.320731",
+  "min_expense_value": 0.01,
+  "window_size": 6
+}

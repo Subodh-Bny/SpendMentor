@@ -2,12 +2,11 @@ import { z } from "zod";
 
 export const expenseSchema = z.object({
   id: z.string().optional(),
-  date: z.date({ required_error: "Date is required" }),
-  amount: z.string().refine((val) => !isNaN(Number(val)), {
-    message: "Amount must be a valid number",
+  description: z.string().min(1, "Description is required"),
+  amount: z.string().refine((val) => parseFloat(val) >= 0, {
+    message: "Amount cannot be negative",
   }),
-
-  description: z.string().optional(),
+  date: z.date(),
   category: z.string().min(1, "Category is required"),
   newCategory: z.string().optional(),
 });

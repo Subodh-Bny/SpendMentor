@@ -18,6 +18,7 @@ export const useAddExpense = () => {
       toast.success(data.message);
       queryClient.invalidateQueries({ queryKey: ["expense"] });
       queryClient.invalidateQueries({ queryKey: ["budget"] });
+      queryClient.invalidateQueries({ queryKey: ["prediction"] });
     },
     onError: (error) => {
       requestError(error as AxiosError<IApiResponse, unknown>);
@@ -41,6 +42,7 @@ export const useUpdateExpense = () => {
       toast.success(data.message);
       queryClient.invalidateQueries({ queryKey: ["expense"] });
       queryClient.invalidateQueries({ queryKey: ["budget"] });
+      queryClient.invalidateQueries({ queryKey: ["prediction"] });
     },
     onError: (error) => {
       requestError(error as AxiosError<IApiResponse, unknown>);
@@ -62,6 +64,7 @@ export const useDeleteExpense = () => {
       toast.success(data.message);
       queryClient.invalidateQueries({ queryKey: ["expense"] });
       queryClient.invalidateQueries({ queryKey: ["budget"] });
+      queryClient.invalidateQueries({ queryKey: ["prediction"] });
     },
     onError: (error) => {
       requestError(error as AxiosError<IApiResponse, unknown>);

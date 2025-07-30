@@ -4,13 +4,14 @@ from datetime import datetime, timedelta
 
 # Constants
 category_ids = [
-    "681c04bbe4ad329ef53317b1",
-    "681c04b1e4ad329ef53317ab",
-    "681c04b6e4ad329ef53317ae"
+    "6888338da8c6d727a8745f97",
+    "68883392a8c6d727a8745f9a",
+    "68883395a8c6d727a8745f9d",
+    "6888339ca8c6d727a8745fa0"
 ]
-user_id = "67867f157c59d7db75ad63af"
-start_date = datetime(2024, 8, 1)
-end_date = datetime(2025, 1, 1)
+user_id = "688831daa8c6d727a8745f7b"
+start_date = datetime(2024, 6, 30)
+end_date = datetime(2025, 7, 30)
 descriptions = ["Groceries", "Fruits", "Vegetables", "Snacks", "Juice", "Milk", "Bread", "Rice", "Eggs"]
 
 expenses = []
