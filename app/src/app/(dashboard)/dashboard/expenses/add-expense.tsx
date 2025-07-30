@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction, useContext, useEffect } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
@@ -49,6 +49,8 @@ import {
 } from "@/services/api/categoryApi";
 
 import toast from "react-hot-toast";
+import { AuthContext } from "@/context/AuthContext";
+import axiosInstance from "@/services/axiosInstance";
 
 export default function AddExpense({
   open,
@@ -62,6 +64,7 @@ export default function AddExpense({
   expense?: IExpense;
 }) {
   const { data: categories } = useGetCategories();
+  const { user } = useContext(AuthContext);
 
   const form = useForm<ExpenseInput>({
     resolver: zodResolver(expenseSchema),
@@ -159,9 +162,25 @@ export default function AddExpense({
 
   const handleSaveExpense = (values: ExpenseInput) => {
     if (expense) {
-      updateExpense(values);
+      updateExpense(values, {
+        onSuccess: async () => {
+          if (user?.id) {
+            await axiosInstance.post(
+              `${process.env.NEXT_PUBLIC_LSTM_TRAIN_URL}${user.id}`
+            );
+          }
+        },
+      });
     } else {
-      addExpense(values);
+      addExpense(values, {
+        onSuccess: async () => {
+          if (user?.id) {
+            await axiosInstance.post(
+              `${process.env.NEXT_PUBLIC_LSTM_TRAIN_URL}${user.id}`
+            );
+          }
+        },
+      });
     }
     form.reset();
   };

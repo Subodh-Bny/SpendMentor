@@ -114,7 +114,12 @@ export default function ExpenseTable() {
                           <Button
                             variant="destructive"
                             disabled={deletePending}
-                            onClick={() => deleteExpense(expense.id || "")}
+                            onClick={() =>
+                              deleteExpense({
+                                id: expense.id,
+                                userId: expense.user?.toString(),
+                              })
+                            }
                           >
                             {deletePending ? (
                               <ClipLoader size={15} />

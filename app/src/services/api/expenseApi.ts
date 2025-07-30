@@ -12,6 +12,7 @@ export const useAddExpense = () => {
     mutationFn: async (data: IExpense) => {
       const res: AxiosResponse<IQueryResponse> =
         await axiosInstance.post<IApiResponse>(endpoints.expense, data);
+
       return res.data;
     },
     onSuccess: (data) => {
@@ -36,6 +37,7 @@ export const useUpdateExpense = () => {
           endpoints.expense + data.id,
           data
         );
+
       return res.data;
     },
     onSuccess: (data) => {
@@ -55,9 +57,12 @@ export const useDeleteExpense = () => {
 
   return useMutation({
     mutationKey: ["expense"],
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, userId }: { id?: string; userId?: string }) => {
       const res: AxiosResponse<IQueryResponse> =
         await axiosInstance.delete<IApiResponse>(endpoints.expense + id);
+      await axiosInstance.post(
+        `${process.env.NEXT_PUBLIC_LSTM_TRAIN_URL}${userId}`
+      );
       return res.data;
     },
     onSuccess: (data) => {

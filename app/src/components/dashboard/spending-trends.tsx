@@ -25,6 +25,7 @@ import { useTheme } from "next-themes";
 import MonthSelector from "../month-selector";
 import { useExpensePrediction } from "@/services/api/predictionApi";
 import { AuthContext } from "@/context/AuthContext";
+import { ClipLoader } from "react-spinners";
 
 const usePrepareSpendData = (month: number, year: number) => {
   const { expenses } = useGetMonthlyExpenses(month, year);
@@ -46,7 +47,8 @@ const SpendTrendAnalysisChart = () => {
   const { user } = useContext(AuthContext);
 
   const { categories, amounts } = usePrepareSpendData(month, year);
-  const { data: predictionData } = useExpensePrediction(user?.id);
+  const { data: predictionData, isPending: predictionPending } =
+    useExpensePrediction(user?.id);
 
   // Prepare prediction data to match the same categories as actual spending
   const preparePredictionData = () => {
@@ -129,15 +131,19 @@ const SpendTrendAnalysisChart = () => {
                 dot={{ r: 4, strokeWidth: 1, fill: "white" }}
                 activeDot={{ r: 6 }}
               />
-              {predictionAmounts && (
-                <Line
-                  type="monotone"
-                  dataKey="predicted"
-                  stroke="var(--color-predicted)"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ r: 4, strokeWidth: 1, fill: "white" }}
-                />
+              {predictionPending ? (
+                <ClipLoader />
+              ) : (
+                predictionAmounts && (
+                  <Line
+                    type="monotone"
+                    dataKey="predicted"
+                    stroke="var(--color-predicted)"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    dot={{ r: 4, strokeWidth: 1, fill: "white" }}
+                  />
+                )
               )}
               <Legend wrapperStyle={{ paddingTop: 10 }} />
               <ChartTooltip
