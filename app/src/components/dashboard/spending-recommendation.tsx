@@ -17,7 +17,6 @@ export function SpendingRecommendation({
   recommendations,
 }: SpendingInsightsProps) {
   const similarityPercentage = Number((similarityScore * 100).toFixed(2));
-  console.log(recommendations);
   return (
     <Card className="w-full">
       <CardHeader>
