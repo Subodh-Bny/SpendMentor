@@ -24,10 +24,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useDeleteExpense, useGetExpenses } from "@/services/api/expenseApi";
 import { format } from "date-fns";
-import { Filter, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
-import { Select, SelectItem } from "@/components/ui/select";
 import MonthSelector from "@/components/month-selector";
 
 export default function ExpenseTable() {
@@ -35,7 +34,7 @@ export default function ExpenseTable() {
   const [addUpdateDialogOpen, setAddUpdateDialogOpen] =
     useState<boolean>(false);
   const [updateExpense, setUpdateExpense] = useState<IExpense | undefined>(
-    undefined
+    undefined,
   );
   const date = new Date();
   const [month, setMonth] = useState(date.getMonth());
@@ -50,7 +49,7 @@ export default function ExpenseTable() {
 
   const total = currentMonthExpenses?.reduce(
     (sum, expense) => sum + parseInt(expense.amount),
-    0
+    0,
   );
 
   const { mutate: deleteExpense, isPending: deletePending } =
