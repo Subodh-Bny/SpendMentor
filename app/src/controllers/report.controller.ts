@@ -121,7 +121,6 @@ export const generateHTMLReport = async (req: Request) => {
             <th>Description</th>
             <th>Category</th>
             <th>Amount</th>
-         
           </tr>
         </thead>
         <tbody>
@@ -150,7 +149,6 @@ export const generateHTMLReport = async (req: Request) => {
     </div>
   </body>
 </html>
-
     `;
 
     const response = new NextResponse(htmlContent, {

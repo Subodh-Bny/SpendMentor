@@ -14,7 +14,10 @@ export const validateAuth = async (): Promise<
   const headersList = await headers();
   const userId = headersList.get("X-User-Id");
   if (!userId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { message: "Unauthorized - " + userId },
+      { status: 401 },
+    );
   }
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return NextResponse.json({ message: "Invalid user id" }, { status: 400 });
