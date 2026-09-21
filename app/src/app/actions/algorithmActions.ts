@@ -11,14 +11,16 @@ export async function checkAndStoreAnomalies(userId: string) {
     await dbConnect();
     
     // 1. Fetch historical transactions for the user
-    const userExpenses = await Expense.find({ user: userId }).lean();
+    const userExpenses = await Expense.find({ user: userId })
+      .populate('category', 'name')
+      .lean();
     if (userExpenses.length < 3) return { success: false, message: 'Not enough data' };
 
-    // Format for FastAPI
+    // Format for FastAPI — include description for display
     const transactions = userExpenses.map((exp: any) => ({
       id: exp._id.toString(),
       amount: Number(exp.amount),
-      description: exp.title || exp.category || 'Expense'
+      description: (exp.category as any)?.name || exp.description || 'Expense'
     }));
 
     // 2. Pass to FastAPI
@@ -34,8 +36,28 @@ export async function checkAndStoreAnomalies(userId: string) {
       );
     }
 
+    // Build detailed flagged list for UI display
+    const expenseById = Object.fromEntries(
+      userExpenses.map((e: any) => [e._id.toString(), e])
+    );
+    const flaggedDetails = anomalyResult.flagged_transactions.map((t: any) => {
+      const exp = expenseById[t.id];
+      return {
+        id: t.id,
+        description: (exp?.category as any)?.name || exp?.description || 'Expense',
+        amount: Number(exp?.amount ?? t.amount),
+        date: exp?.date ? new Date(exp.date).toLocaleDateString() : null,
+        z_score: t.anomaly_score ?? t.z_score ?? null,
+      };
+    });
+
     revalidatePath('/dashboard');
-    return { success: true, anomaliesDetected: flaggedIds.length, data: anomalyResult };
+    return {
+      success: true,
+      anomaliesDetected: flaggedIds.length,
+      flaggedDetails,
+      data: anomalyResult,
+    };
   } catch (error) {
     console.error("Anomaly Check Error:", error);
     return { success: false, message: 'Failed to process anomalies' };
