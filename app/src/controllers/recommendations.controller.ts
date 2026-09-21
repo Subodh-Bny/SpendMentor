@@ -36,7 +36,7 @@ export default async function getExpensesRecommendations(): Promise<NextResponse
     const currentMonthNum = latestExpenseDate.getUTCMonth() + 1;
 
     const prevMonthDate = new Date(
-      Date.UTC(currentYear, currentMonthNum - 1, 1)
+      Date.UTC(currentYear, currentMonthNum - 1, 1),
     );
     prevMonthDate.setUTCMonth(prevMonthDate.getUTCMonth() - 1);
     const previousYear = prevMonthDate.getUTCFullYear();
@@ -44,11 +44,11 @@ export default async function getExpensesRecommendations(): Promise<NextResponse
 
     const currentMonth = `${currentYear}-${String(currentMonthNum).padStart(
       2,
-      "0"
+      "0",
     )}`;
     const previousMonth = `${previousYear}-${String(previousMonthNum).padStart(
       2,
-      "0"
+      "0",
     )}`;
 
     const { categories } = organizeExpensesByMonth(expenses);
@@ -63,27 +63,27 @@ export default async function getExpensesRecommendations(): Promise<NextResponse
     const currentMonthExpenses = filterExpensesByMonth(
       expenses,
       currentYear,
-      currentMonthNum
+      currentMonthNum,
     );
     const previousMonthExpenses = filterExpensesByMonth(
       expenses,
       previousYear,
-      previousMonthNum
+      previousMonthNum,
     );
 
     const currentData = calculateMonthlyTotals(
       currentMonthExpenses,
-      categories
+      categories,
     );
     const previousData = calculateMonthlyTotals(
       previousMonthExpenses,
-      categories
+      categories,
     );
 
     const similarityScore = calculateSimilarityScore(
       currentData,
       previousData,
-      categories
+      categories,
     );
 
     const recommendations = generateRecommendations(
@@ -91,7 +91,7 @@ export default async function getExpensesRecommendations(): Promise<NextResponse
       previousData,
       currentMonth,
       previousMonth,
-      categories
+      categories,
     );
 
     return createResponse(similarityScore, recommendations);
@@ -103,7 +103,7 @@ export default async function getExpensesRecommendations(): Promise<NextResponse
         message: "Failed to generate recommendations",
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -155,7 +155,7 @@ function organizeExpensesByMonth(expenses: any[]) {
 
 function calculateMonthlyTotals(
   expenses: any[],
-  categories: string[]
+  categories: string[],
 ): ICategorySpending {
   const monthlyData: ICategorySpending = {};
   categories.forEach((cat) => (monthlyData[cat] = 0));
@@ -172,7 +172,7 @@ function calculateMonthlyTotals(
 function calculateSimilarityScore(
   currentMonth: ICategorySpending,
   previousMonth: ICategorySpending,
-  categories: string[]
+  categories: string[],
 ): number {
   const currentVector = categories.map((cat) => currentMonth[cat] || 0);
   const previousVector = categories.map((cat) => previousMonth[cat] || 0);
@@ -184,7 +184,7 @@ function generateRecommendations(
   previous: ICategorySpending,
   currentMonth: string,
   previousMonth: string,
-  categories: string[]
+  categories: string[],
 ): string[] {
   const recommendations: string[] = [];
 
@@ -199,7 +199,7 @@ function generateRecommendations(
   if (totalPrevious === 0) {
     if (totalCurrent > 0) {
       recommendations.push(
-        `New spending this month: Rs ${totalCurrent.toFixed(2)}`
+        `New spending this month: Rs ${totalCurrent.toFixed(2)}`,
       );
     }
   } else {
@@ -207,11 +207,11 @@ function generateRecommendations(
       const trend = totalChange > 0 ? "increased" : "decreased";
       recommendations.push(
         `Total spending ${trend} by ${Math.abs(totalChangePercent).toFixed(
-          1
+          1,
         )}% ` +
           `(${totalChange > 0 ? "+" : ""}Rs ${Math.abs(totalChange).toFixed(
-            2
-          )})`
+            2,
+          )})`,
       );
     } else {
       recommendations.push("Overall spending remains stable");
@@ -225,13 +225,13 @@ function generateRecommendations(
 
     if (previousAmount === 0 && currentAmount > 0) {
       recommendations.push(
-        `New spending in ${category}: Rs ${currentAmount.toFixed(2)}`
+        `New spending in ${category}: Rs ${currentAmount.toFixed(2)}`,
       );
     } else if (currentAmount === 0 && previousAmount > 0) {
       recommendations.push(
         `Stopped spending on ${category} (saved Rs ${previousAmount.toFixed(
-          2
-        )})`
+          2,
+        )})`,
       );
     } else if (previousAmount > 0) {
       const changePercent = (change / previousAmount) * 100;
@@ -239,8 +239,8 @@ function generateRecommendations(
         const trend = change > 0 ? "↑" : "↓";
         recommendations.push(
           `${category} spending ${trend} by ${Math.abs(changePercent).toFixed(
-            1
-          )}% ` + `(${trend} $${Math.abs(change).toFixed(2)})`
+            1,
+          )}% ` + `(${trend} Rs. ${Math.abs(change).toFixed(2)})`,
         );
       }
     }
@@ -253,7 +253,7 @@ function generateRecommendations(
 
 function createResponse(
   similarityScore: number,
-  recommendations: string[]
+  recommendations: string[],
 ): NextResponse {
   return NextResponse.json({
     success: true,

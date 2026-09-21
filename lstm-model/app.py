@@ -12,8 +12,11 @@ import joblib
 import datetime
 import os
 import logging
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
+from pydantic import BaseModel, Field
 import json
+import math
+import time
 
 # ------------------- LOGGING ------------------- #
 logging.basicConfig(
@@ -38,8 +41,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # Dev
-        "https://your-frontend-domain.com"  # Production
+       "*" # Production
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -49,7 +51,7 @@ app.add_middleware(
 
 # ------------------- MONGODB ------------------- #
 try:
-    client = MongoClient("mongodb+srv://subodh_brushstroke:65nQOXyGwE5BNq1B@cluster0.dpqxvte.mongodb.net/SpendWise?retryWrites=true&w=majority&appName=Cluster0")
+    client = MongoClient("mongodb://subodh_brushstroke:65nQOXyGwE5BNq1B@ac-7ajjmln-shard-00-00.dpqxvte.mongodb.net:27017,ac-7ajjmln-shard-00-01.dpqxvte.mongodb.net:27017,ac-7ajjmln-shard-00-02.dpqxvte.mongodb.net:27017/SpendWise?ssl=true&authSource=admin&replicaSet=atlas-thk0nk-shard-0&retryWrites=true&w=majority&appName=Cluster0")
     db = client['SpendWise']
     expenses_collection = db['expenses']
     categories_collection = db['categories']
@@ -219,6 +221,217 @@ async def train_endpoint(user_id: str, background_tasks: BackgroundTasks):
 
     background_tasks.add_task(train_model_for_user, user_oid)
     return {"status": "training_started", "user_id": user_id}
+
+# ==============================================================================
+# 1. PYDANTIC SCHEMAS (DATA CONTRACTS)
+# ==============================================================================
+
+class ExpenseItem(BaseModel):
+    id: str = Field(..., description="Unique identifier of the expense")
+    name: str = Field(..., description="Name or description of the expense item")
+    amount: float = Field(..., gt=0, description="Cost of the expense (weight in knapsack)")
+    priority_score: int = Field(
+        ...,
+        ge=1,
+        le=100,
+        description="Cut priority or non-essential value score (value in knapsack, higher = better to cut)",
+    )
+
+class OptimizeBudgetRequest(BaseModel):
+    target_savings: float = Field(
+        ...,
+        gt=0,
+        description="Target savings amount to cut without exceeding (Knapsack capacity W)",
+    )
+    expenses: List[ExpenseItem] = Field(
+        ...,
+        min_length=1,
+        description="List of candidate non-essential expenses to consider cutting",
+    )
+
+class DPExecutionDetails(BaseModel):
+    capacity_w: int
+    num_items: int
+    dp_matrix_shape: str
+    time_complexity: str
+    space_complexity: str
+    execution_time_ms: float
+    mathematical_recurrence: str
+
+class OptimizeBudgetResponse(BaseModel):
+    recommended_cuts: List[ExpenseItem]
+    total_saved_amount: float
+    total_priority_score: int
+    target_savings: float
+    execution_details: DPExecutionDetails
+
+class TransactionItem(BaseModel):
+    id: str = Field(..., description="Unique transaction ID")
+    amount: float = Field(..., gt=0, description="Monetary value of the transaction")
+    description: Optional[str] = Field(None, description="Optional transaction label")
+
+class AnomalyDetectionRequest(BaseModel):
+    transactions: List[TransactionItem] = Field(
+        ...,
+        min_length=3,
+        description="Historical user transactions (at least 3 required for statistical significance)",
+    )
+    threshold_z: float = Field(
+        default=2.5,
+        ge=1.0,
+        le=4.0,
+        description="Z-Score threshold to flag an outlier (Standard: 2.5 to 3.0)",
+    )
+
+class FlaggedTransaction(BaseModel):
+    id: str
+    amount: float
+    z_score: float
+    confidence_score: float = Field(
+        ...,
+        description="Outlier severity confidence score scaled between 0.0 and 1.0",
+    )
+    deviation_from_mean: float
+
+class StatisticalSummary(BaseModel):
+    mean: float
+    standard_deviation: float
+    variance: float
+    total_transactions_analyzed: int
+    total_anomalies_detected: int
+
+class AnomalyDetectionResponse(BaseModel):
+    flagged_transactions: List[FlaggedTransaction]
+    statistical_summary: StatisticalSummary
+    formula_used: str
+
+# ==============================================================================
+# 2. CORE ALGORITHMIC FUNCTIONS
+# ==============================================================================
+
+def solve_01_knapsack(
+    items: List[ExpenseItem],
+    capacity: float,
+    scale_factor: int = 1,
+) -> Tuple[List[ExpenseItem], int, float, dict]:
+    start_time = time.perf_counter()
+    scaled_capacity = int(round(capacity * scale_factor))
+    n = len(items)
+
+    weights = [int(round(item.amount * scale_factor)) for item in items]
+    values = [item.priority_score for item in items]
+
+    dp = [[0] * (scaled_capacity + 1) for _ in range(n + 1)]
+
+    for i in range(1, n + 1):
+        item_weight = weights[i - 1]
+        item_val = values[i - 1]
+        for w in range(scaled_capacity + 1):
+            if item_weight <= w:
+                dp[i][w] = max(dp[i - 1][w], dp[i - 1][w - item_weight] + item_val)
+            else:
+                dp[i][w] = dp[i - 1][w]
+
+    selected_items: List[ExpenseItem] = []
+    w = scaled_capacity
+    for i in range(n, 0, -1):
+        if dp[i][w] != dp[i - 1][w]:
+            selected_items.append(items[i - 1])
+            w -= weights[i - 1]
+
+    selected_items.reverse()
+    total_saved = sum(item.amount for item in selected_items)
+    max_priority = dp[n][scaled_capacity]
+    execution_time_ms = (time.perf_counter() - start_time) * 1000
+
+    metadata = {
+        "capacity_w": scaled_capacity,
+        "num_items": n,
+        "dp_matrix_shape": f"{n + 1} x {scaled_capacity + 1}",
+        "time_complexity": "O(n * W)",
+        "space_complexity": "O(n * W)",
+        "execution_time_ms": round(execution_time_ms, 4),
+        "mathematical_recurrence": "DP[i][w] = max(DP[i-1][w], DP[i-1][w - w[i]] + v[i])",
+    }
+
+    return selected_items, max_priority, total_saved, metadata
+
+def compute_z_score_anomalies(
+    transactions: List[TransactionItem],
+    threshold_z: float = 2.5,
+) -> Tuple[List[FlaggedTransaction], StatisticalSummary]:
+    n = len(transactions)
+    amounts = [t.amount for t in transactions]
+
+    mean = sum(amounts) / n
+    variance = sum((x - mean) ** 2 for x in amounts) / n
+    std_dev = math.sqrt(variance)
+
+    flagged: List[FlaggedTransaction] = []
+
+    if std_dev > 1e-9:
+        for tx in transactions:
+            z = (tx.amount - mean) / std_dev
+            if z > threshold_z:
+                confidence = min(1.0, 0.5 + ((z - threshold_z) / (threshold_z * 2)))
+                flagged.append(
+                    FlaggedTransaction(
+                        id=tx.id,
+                        amount=tx.amount,
+                        z_score=round(z, 4),
+                        confidence_score=round(confidence, 4),
+                        deviation_from_mean=round(tx.amount - mean, 2),
+                    )
+                )
+
+    summary = StatisticalSummary(
+        mean=round(mean, 2),
+        standard_deviation=round(std_dev, 2),
+        variance=round(variance, 2),
+        total_transactions_analyzed=n,
+        total_anomalies_detected=len(flagged),
+    )
+
+    return flagged, summary
+
+# ==============================================================================
+# 3. FASTAPI REST ROUTERS
+# ==============================================================================
+
+@app.post("/api/v1/optimize-budget", response_model=OptimizeBudgetResponse)
+async def optimize_budget(payload: OptimizeBudgetRequest):
+    try:
+        recommended_cuts, total_priority, total_saved, meta = solve_01_knapsack(
+            items=payload.expenses,
+            capacity=payload.target_savings,
+            scale_factor=1,
+        )
+
+        return OptimizeBudgetResponse(
+            recommended_cuts=recommended_cuts,
+            total_saved_amount=round(total_saved, 2),
+            total_priority_score=total_priority,
+            target_savings=payload.target_savings,
+            execution_details=DPExecutionDetails(**meta),
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Knapsack computation error: {str(exc)}")
+
+@app.post("/api/v1/detect-anomalies", response_model=AnomalyDetectionResponse)
+async def detect_anomalies(payload: AnomalyDetectionRequest):
+    try:
+        flagged, summary = compute_z_score_anomalies(
+            transactions=payload.transactions,
+            threshold_z=payload.threshold_z,
+        )
+
+        return AnomalyDetectionResponse(
+            flagged_transactions=flagged,
+            statistical_summary=summary,
+            formula_used="Z = (X - μ) / σ; flagged where Z > threshold_z",
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Anomaly detection error: {str(exc)}")
 
 @app.get("/health")
 async def health_check():

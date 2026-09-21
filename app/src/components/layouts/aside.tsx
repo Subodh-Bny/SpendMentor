@@ -16,6 +16,7 @@ import {
   Blocks,
   LayoutDashboard,
   Settings,
+  TrendingDown,
   // X,
 } from "lucide-react";
 import { AuthContext } from "@/context/AuthContext";
@@ -55,6 +56,11 @@ const links = [
     link: routes.dashboard.categories,
     name: "Categories",
     icon: Blocks,
+  },
+  {
+    link: routes.dashboard.algorithms,
+    name: "Budget Optimizer",
+    icon: TrendingDown,
   },
 ];
 

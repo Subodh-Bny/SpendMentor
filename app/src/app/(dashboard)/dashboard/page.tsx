@@ -10,6 +10,8 @@ import { useGenerateReports } from "@/services/api/reportsApi";
 import { useGetRecommendation } from "@/services/api/userApi";
 import { Download } from "lucide-react";
 import React, { useRef } from "react";
+import AnomalyAlertBanner from "@/components/AnomalyAlertBanner";
+import BudgetOptimizerCard from "@/components/BudgetOptimizerCard";
 
 const DashboardPage = () => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -45,14 +47,21 @@ const DashboardPage = () => {
         </div>
         <iframe ref={iframeRef} style={{ display: "none" }} />
 
+        <AnomalyAlertBanner userId="67867f157c59d7db75ad63af" />
+
         <section className="grid gap-4  md:grid-cols-3">
           <ExpenseOverview />
           <BudgetVsActual />
           <SavingsGoal />
         </section>
-        <section>
-          <CategoryBreakdown />
-        </section>
+
+        <CategoryBreakdown />
+        {/* <section className="grid gap-4 md:grid-cols-3">
+          <div className="md:col-span-">
+          </div>
+       <div className="md:col-span-1">
+            <BudgetOptimizerCard />
+          </div> */}
         <section>
           <SpendingRecommendation
             similarityScore={recommendations?.similarityScore || 0}
@@ -62,7 +71,7 @@ const DashboardPage = () => {
         <section>
           <SpendingTrends />
         </section>
-      </div>
+      </div >
     </>
   );
 };

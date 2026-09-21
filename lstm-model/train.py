@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np  # pyright: ignore[reportMissingImports]
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from tensorflow.keras.callbacks import Callback, EarlyStopping
@@ -35,7 +35,7 @@ os.makedirs(CONFIG_DIR, exist_ok=True)
 os.makedirs(TRAINING_LOGS_DIR, exist_ok=True)
 
 # MongoDB Connection
-client = MongoClient("mongodb+srv://subodh_brushstroke:65nQOXyGwE5BNq1B@cluster0.dpqxvte.mongodb.net/SpendWise?retryWrites=true&w=majority&appName=Cluster0")
+client = MongoClient("mongodb://subodh_brushstroke:65nQOXyGwE5BNq1B@ac-7ajjmln-shard-00-00.dpqxvte.mongodb.net:27017,ac-7ajjmln-shard-00-01.dpqxvte.mongodb.net:27017,ac-7ajjmln-shard-00-02.dpqxvte.mongodb.net:27017/SpendWise?ssl=true&authSource=admin&replicaSet=atlas-thk0nk-shard-0&retryWrites=true&w=majority&appName=Cluster0")
 db = client['SpendWise']
 expenses_collection = db['expenses']
 categories_collection = db['categories']
@@ -210,9 +210,9 @@ def train_model_for_user(user_id: ObjectId) -> bool:
         
         # Build model with ReLU final activation
         model = Sequential([
-            LSTM(128, activation='relu', return_sequences=True,
+            LSTM(128, return_sequences=True,
                  input_shape=(WINDOW_SIZE, len(active_categories))),
-            LSTM(64, activation='relu'),
+            LSTM(64),
             Dense(32, activation='relu'),
             Dense(len(active_categories), activation='relu')  # Critical for non-negative outputs
         ])

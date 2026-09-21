@@ -6,6 +6,7 @@ const routes = {
     budget: { overview: "/dashboard/budget/", new: "/dashboard/budget/new" },
     goals: "/dashboard/goals",
     categories: "/dashboard/categories",
+    algorithms: "/algorithms",
   },
   settings: "/settings",
 };
