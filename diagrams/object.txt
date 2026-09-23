@@ -1,0 +1,124 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'secondaryColor': '#ffffff',
+    'tertiaryColor': '#ffffff',
+    'fontFamily': 'Times New Roman, serif',
+    'fontSize': '13px'
+  }
+}}%%
+classDiagram
+    direction TB
+
+    %% Tier 1: User Identity
+    class User {
+        +ObjectId _id
+        +string name
+        +string email
+        +string password
+        +boolean isVerified
+        +string verificationToken
+        +Date verificationTokenExpire
+        +register(): Promise~User~
+        +verifyEmail(token): Promise~boolean~
+        +getVerificationToken(): string
+    }
+
+    %% Tier 2: Category Structure
+    class Category {
+        +ObjectId _id
+        +string name
+        +ObjectId user
+        +createCategory(name): Category
+    }
+
+    %% Tier 3: Core Transactional Entities
+    class Expense {
+        +ObjectId _id
+        +ObjectId user
+        +ObjectId category
+        +number amount
+        +Date date
+        +string description
+        +boolean isAnomaly
+        +categorize(catId): void
+        +markAnomaly(flag): void
+    }
+
+    class Budget {
+        +ObjectId _id
+        +ObjectId user
+        +ObjectId category
+        +number amount
+        +string month
+        +setBudget(amount, month): void
+        +checkThreshold(actual): boolean
+    }
+
+    class RecurringExpense {
+        +ObjectId _id
+        +ObjectId user
+        +string name
+        +number amount
+        +number priority_score
+        +string category
+        +boolean is_active
+        +markInactive(): void
+        +markActive(): void
+    }
+
+    class Income {
+        +ObjectId _id
+        +ObjectId user
+        +number income
+        +updateIncome(amount): Promise~void~
+    }
+
+    class SavingsGoal {
+        +ObjectId _id
+        +ObjectId user
+        +string targetAmount
+        +string currentAmount
+        +Date targetDate
+        +updateProgress(amount): void
+    }
+
+    %% Tier 4: Stateless Analytical Engines
+    class ForecastEngine {
+        <<service>>
+        +trainModel(userId): Promise~boolean~
+        +predict(userId): ForecastResult
+    }
+
+    class BudgetOptimizer {
+        <<service>>
+        +solve01Knapsack(items, capacity): KnapsackResult
+    }
+
+    class AnomalyDetector {
+        <<service>>
+        +computeZScoreAnomalies(txs, threshold): AnomalyResult
+    }
+
+    class SimilarityAnalyzer {
+        <<service>>
+        +analyzeSpendingClusters(userId): SimilarityResult
+    }
+
+    %% Downward Directional Flow
+    User "1" --> "0..*" Category : defines
+    User "1" --> "0..*" Income : earns
+    User "1" --> "0..*" SavingsGoal : establishes
+
+    Category "1" --> "0..*" Expense : categorizes
+    Category "1" --> "0..*" Budget : sets limits for
+    User "1" --> "0..*" RecurringExpense : manages
+
+    Expense ..> ForecastEngine : feeds historical data
+    Expense ..> AnomalyDetector : feeds transactions
+    Expense ..> SimilarityAnalyzer : feeds clusters
+    RecurringExpense ..> BudgetOptimizer : feeds candidate cuts

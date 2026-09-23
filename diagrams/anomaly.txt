@@ -1,0 +1,53 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'actorBkg': '#ffffff',
+    'actorBorder': '#000000',
+    'actorTextColor': '#000000',
+    'signalColor': '#000000',
+    'signalTextColor': '#000000',
+    'labelBoxBkgColor': '#ffffff',
+    'labelBoxBorderColor': '#000000',
+    'labelTextColor': '#000000',
+    'noteBorderColor': '#000000',
+    'noteBkgColor': '#ffffff',
+    'noteTextColor': '#000000',
+    'activationBorderColor': '#000000',
+    'activationBkgColor': '#f2f2f2',
+    'fontFamily': 'Times New Roman, serif',
+    'fontSize': '12px'
+  }
+}}%%
+sequenceDiagram
+    autonumber
+    actor User as User
+    participant UI as Next.js UI<br/>(Client Page)
+    participant BFF as Next.js BFF<br/>(Route Handler)
+    participant DB as MongoDB<br/>(Atlas Cloud)
+    participant API as FastAPI<br/>(Analytics)
+
+    User->>UI: Submit Expense (Amount, Date, Category)
+    UI->>BFF: POST /api/expense
+    activate BFF
+    BFF->>DB: new Expense({...}).save()
+    DB-->>BFF: Expense Persisted
+    BFF-->>UI: 201 Created (Expense Saved)
+    deactivate BFF
+
+    Note over BFF,API: Asynchronous Anomaly Evaluation
+    activate BFF
+    BFF->>DB: Fetch category history
+    DB-->>BFF: Return historical transactions
+    BFF->>API: POST /api/v1/detect-anomalies
+    activate API
+    Note over API: Statistical Z-Score Engine:<br/>Mean μ = ΣX / n<br/>Std Dev σ = √(Σ(X-μ)² / n)<br/>Z = (X - μ) / σ
+    API-->>BFF: 200 OK (flagged list, μ, σ)
+    deactivate API
+
+    opt When Outlier Flagged (Z > 2.5)
+        BFF->>DB: updateMany(isAnomaly = true)
+        DB-->>BFF: Acknowledge DB Update
+        BFF-->>UI: Revalidation Trigger
+        UI-->>User: Display Anomaly Warning Banner
+    end
+    deactivate BFF

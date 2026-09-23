@@ -1,0 +1,30 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'fontFamily': 'Times New Roman, serif',
+    'fontSize': '13px'
+  }
+}}%%
+stateDiagram-v2
+    direction TB
+
+    [*] --> Normal : 1. Expense Created & Persisted
+
+    Normal --> Normal : 2. Z-Score Evaluation<br/>[Z <= 2.5 : Within Bounds]
+
+    Normal --> Flagged : 3. Outlier Evaluated<br/>[Z > 2.5 : Statistical Anomaly]
+
+    state Flagged {
+        [*] --> PendingUserReview
+        PendingUserReview --> Dismissed : User confirms legitimate outlier
+        PendingUserReview --> Corrected : User edits incorrect amount
+    }
+
+    Flagged --> Reviewed : 4. Alert Resolved (Dismiss / Correct)
+    Flagged --> [*] : 4. User Deletes Outlier Record
+
+    Reviewed --> [*] : 5. Persisted in Permanent Audit Log

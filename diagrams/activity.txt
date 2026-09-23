@@ -1,0 +1,46 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'fontFamily': 'Times New Roman, serif',
+    'fontSize': '12px'
+  }
+}}%%
+flowchart TD
+    startNode((●)) --> A["1. Enter Expense Details<br/>(Amount, Date, Category, Description)"]
+    A --> B{"2. Validate Form Fields<br/>(Required Fields Present)?"}
+    
+    B -- "Invalid" --> C["Display Form Validation Errors"]
+    C --> A
+    
+    B -- "Valid" --> D["3. Select or Create Category"]
+    D --> ForkNode["══════════ FORK (Parallel Execution) ══════════"]
+    
+    ForkNode --> E["4a. Persist Expense in MongoDB<br/>(new Expense.save())"]
+    ForkNode --> F["4b. Execute Z-Score Anomaly Check<br/>(FastAPI Service)"]
+    
+    F --> G{"Z-Score > 2.5?"}
+    G -- "Yes" --> H["Flag Record: isAnomaly = true"]
+    G -- "No" --> I["Retain Record: isAnomaly = false"]
+    
+    E --> JoinNode["══════════ JOIN (Synchronization) ══════════"]
+    H --> JoinNode
+    I --> JoinNode
+    
+    JoinNode --> J{"5. Check Category History<br/>History >= 6 Months?"}
+    
+    J -- "Yes" --> K["6. Call LSTM Prediction Engine<br/>(POST /predict/{user_id})"]
+    K --> L["7. MinMax Scaling & Sliding Window<br/>(Window Size = 6 Months)"]
+    L --> M["8. Run LSTM Inference & Smoothing<br/>(0.7 Last Month + 0.3 Prediction)"]
+    M --> N["9. Render Next Month Predictions on Dashboard"]
+    
+    J -- "No" --> O["Display Informational Message:<br/>'Insufficient historical data for LSTM prediction'"]
+    
+    N --> endNode(((●)))
+    O --> endNode(((●)))
+
+    classDef bw fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    class startNode,A,B,C,D,ForkNode,E,F,G,H,I,JoinNode,J,K,L,M,N,O,endNode bw;

@@ -1,0 +1,53 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'fontFamily': 'Times New Roman, serif',
+    'fontSize': '12px'
+  }
+}}%%
+flowchart TD
+    %% TIER 1: WEB COMPONENT
+    subgraph WebTier ["«component» Web Component (Next.js 15 BFF)"]
+        direction TB
+        UI["Browser Client UI<br/>(React 19, Tailwind CSS, Recharts)"]
+        BFF["BFF Controller Layer<br/>(Route Handlers & Server Actions)"]
+        AlgoClient["Algorithm Client Module<br/>(algorithmClient.ts)"]
+        MongooseClient["Mongoose ODM Client<br/>(dbConnect.ts & Schemas)"]
+        
+        UI --> BFF
+        BFF --> AlgoClient
+        BFF --> MongooseClient
+    end
+
+    %% TIER 2: ANALYTICS COMPONENT
+    subgraph AnalyticsTier ["«component» Analytics Component (FastAPI Engine)"]
+        direction TB
+        APIRouter["FastAPI REST Routers<br/>(app.py / Uvicorn ASGI)"]
+        KnapsackEngine["Budget Optimizer<br/>(0/1 Knapsack DP)"]
+        AnomalyEngine["Anomaly Detector<br/>(Z-Score Engine)"]
+        LSTMEngine["Forecasting Engine<br/>(TensorFlow/Keras LSTM)"]
+        PyMongoDriver["PyMongo Aggregation Client<br/>(Monthly Summaries)"]
+
+        APIRouter --> KnapsackEngine
+        APIRouter --> AnomalyEngine
+        APIRouter --> LSTMEngine
+        LSTMEngine --> PyMongoDriver
+    end
+
+    %% TIER 3: DATA COMPONENT
+    subgraph DataTier ["«component» Data Component (MongoDB Atlas Cloud)"]
+        AtlasDB[("SpendWise Database<br/>• users<br/>• expenses<br/>• budgets<br/>• recurringexpenses<br/>• categories")]
+    end
+
+    %% INTER-COMPONENT CONNECTORS (STRICTLY DOWNWARD)
+    AlgoClient -->|"REST / HTTP POST<br/>• /api/v1/optimize-budget<br/>• /api/v1/detect-anomalies<br/>• /predict/{user_id}"| APIRouter
+
+    MongooseClient -->|"Encrypted TLS (Port 27017)<br/>Application CRUD Persistence"| AtlasDB
+    PyMongoDriver -->|"Encrypted TLS (Port 27017)<br/>Aggregation Pipelines"| AtlasDB
+
+    classDef bw fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    class UI,BFF,AlgoClient,MongooseClient,APIRouter,KnapsackEngine,AnomalyEngine,LSTMEngine,PyMongoDriver,AtlasDB bw;

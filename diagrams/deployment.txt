@@ -1,0 +1,40 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'fontFamily': 'Times New Roman, serif',
+    'fontSize': '12px'
+  }
+}}%%
+flowchart TD
+    %% Node 1
+    subgraph Node1 ["«device» Client Workstation / Smartphone"]
+        Browser["«execution environment» Modern Web Browser<br/>• HTML5 / JavaScript V8 Engine<br/>• Local Storage & Cookie Management"]
+    end
+
+    %% Node 2
+    subgraph Node2 ["«cloud environment» Vercel Serverless Cloud Platform"]
+        VercelServerless["«execution environment» Next.js Serverless Runtime (Node.js)<br/>• React 19 Server-Side Rendering (SSR)<br/>• BFF Route Handlers & Server Actions<br/>• Mongoose ODM Connection Pooling"]
+    end
+
+    %% Node 3
+    subgraph Node3 ["«device» Dedicated Analytics Host (Cloud VM / VPS)"]
+        DockerEnv["«execution environment» Docker Linux Container<br/>• Uvicorn ASGI Server<br/>• Python 3.10 & FastAPI Runtime<br/>• TensorFlow / Keras 2.x Deep Learning Engine<br/>• Scikit-Learn Preprocessing & PyMongo Client"]
+    end
+
+    %% Node 4
+    subgraph Node4 ["«cloud environment» MongoDB Atlas Managed Cloud"]
+        AtlasCluster["«database system» MongoDB Engine 7.x Cluster<br/>• Primary & Secondary Replica Sets (High Availability)<br/>• WiredTiger Engine with Encrypted Storage-at-Rest<br/>• Automated Daily Snapshot Backups"]
+    end
+
+    %% Straight Downward Connections
+    Browser -- "HTTPS / TLS (Port 443)<br/>JSON & HTML Payloads" --> VercelServerless
+    VercelServerless -- "Internal REST / HTTP (Port 8000)<br/>JSON Payloads via algorithmClient" --> DockerEnv
+    VercelServerless -- "Encrypted TLS TCP (Port 27017)<br/>Mongoose CRUD Connection" --> AtlasCluster
+    DockerEnv -- "Encrypted TLS TCP (Port 27017)<br/>PyMongo Aggregation Pipeline Connection" --> AtlasCluster
+
+    classDef bw fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    class Browser,VercelServerless,DockerEnv,AtlasCluster bw;

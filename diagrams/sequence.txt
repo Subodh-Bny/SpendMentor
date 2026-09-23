@@ -1,0 +1,44 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'actorBkg': '#ffffff',
+    'actorBorder': '#000000',
+    'actorTextColor': '#000000',
+    'signalColor': '#000000',
+    'signalTextColor': '#000000',
+    'labelBoxBkgColor': '#ffffff',
+    'labelBoxBorderColor': '#000000',
+    'labelTextColor': '#000000',
+    'noteBorderColor': '#000000',
+    'noteBkgColor': '#ffffff',
+    'noteTextColor': '#000000',
+    'activationBorderColor': '#000000',
+    'activationBkgColor': '#f2f2f2',
+    'fontFamily': 'Times New Roman, serif',
+    'fontSize': '12px'
+  }
+}}%%
+sequenceDiagram
+    autonumber
+    actor User as User
+    participant UI as Next.js UI<br/>(Client Page)
+    participant BFF as Next.js BFF<br/>(Server Action)
+    participant DB as MongoDB<br/>(Atlas Cloud)
+    participant API as FastAPI<br/>(Analytics)
+
+    User->>UI: Enter Target Savings (e.g. NPR 5,000)
+    UI->>BFF: getRecurringExpenses(userId)
+    activate BFF
+    BFF->>DB: Query: is_active = true
+    DB-->>BFF: Return Candidate Items List
+    
+    Note over BFF,API: POST /api/v1/optimize-budget<br/>{target_savings, expenses}
+    BFF->>API: optimizeBudget(target, items)
+    activate API
+    Note over API: 0/1 Knapsack DP Algorithm<br/>DP[i][w] = max(DP[i-1][w],<br/>DP[i-1][w-w[i]] + v[i])<br/>Complexity: O(n·W)
+    API-->>BFF: 200 OK (recommended cuts)
+    deactivate API
+    
+    BFF-->>UI: Return Optimization Result JSON
+    deactivate BFF
+    UI-->>User: Render Recommended Cuts & Summary Table

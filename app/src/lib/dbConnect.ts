@@ -23,17 +23,28 @@ if (!cached) {
 }
 
 const dbConnect = async (): Promise<void> => {
-  if (cached.connection) {
+  if (cached.connection && mongoose.connection.readyState === 1) {
     console.log("Using cached connection");
     return;
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI).then((mongoose) => mongoose);
+    const opts = {
+      bufferCommands: false,
+    };
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
+      return mongooseInstance;
+    });
   }
 
-  cached.connection = await cached.promise;
-  console.log("Connected to the Database");
+  try {
+    cached.connection = await cached.promise;
+    console.log("Connected to the Database");
+  } catch (error) {
+    cached.promise = null;
+    cached.connection = null;
+    throw error;
+  }
 };
 
 export default dbConnect;
